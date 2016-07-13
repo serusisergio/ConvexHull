@@ -40,8 +40,44 @@ void ConflictGraph::initializeCG(){
             matrix(3,2) = p.z();
             matrix(3,3) = 1;
 
-            double det = matrix.determinant();
+            if(matrix.determinant() > std::numeric_limits<double>::epsilon()){//nella
+
+            }
         }
     }
 }
+
+/**
+ * @brief ConvexHullCore::addFaceToVertex()
+ * This method is the used to insert the face f that is in conflict with the vertex v
+ */
+void ConflictGraph::addFaceToVertex(){
+    
+}
+
+/**
+ * @brief ConvexHullCore::addVertexToFace()
+ * This method is the used to insert the vertex v that is in conflict with the face f
+ */
+void ConflictGraph::addVertexToFace(){
+    
+}
+
+/**
+ * @brief ConvexHullCore::deleteFaceFromVertex()
+ * This method is the used to delete the face f from the vertex v, because the face f is not in conflict
+ */
+void ConflictGraph::deleteFaceFromVertex(){
+    
+}
+
+/**
+ * @brief ConvexHullCore::deleteVertexFromFace()
+ * This method is the used to delete the vertex v from the face f, because the vertex v is not in conflict
+ */
+void ConflictGraph::deleteVertexFromFace(){
+    
+}
+
+
 

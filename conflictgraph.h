@@ -28,6 +28,10 @@ public:
 
 private:
     int numberVertex=0;
+    void addFaceToVertex();
+    void addVertexToFace();
+    void deleteFaceFromVertex();
+    void deleteVertexFromFace();
 };
 
 #endif // CONFLICTGRAPH_H
