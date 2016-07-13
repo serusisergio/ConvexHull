@@ -14,7 +14,8 @@ public:
     //metodi
     ConflictGraph(DrawableDcel* dcel, std::vector<Dcel::Vertex*> &vertexS);
     void initializeCG();
-
+    std::list<Dcel::Face*> getFacesVisibleByVertex(Dcel::Vertex* vertex);
+    std::list<Dcel::Vertex*> getVertexVisibleByFace(Dcel::Face* face);
 
     //Oggetti-Variabili passati da convexhull core
     DrawableDcel* dcel;
@@ -22,16 +23,16 @@ public:
 
     //OggettiVariali creati in questa classe
     //bisogna usare una lista, vista l'esigenza di eliminare ed aggiornare spesso è la soluzione migliore, il vettore è poco dinamico, per eliminare un oggetto bisogna
-    //successivmente risistemare tutti gli elementi del vettore. Verrà usata la lista, come consigliato a lezione.
+    //successivmente risistemare tutti gli elementi del vettore. Verrà usata la lista, come consigliato a lezione e tutoraggio.
     std::map<Dcel::Face*, std::list<Dcel::Vertex*>> F_conflict;
     std::map<Dcel::Vertex*, std::list<Dcel::Face*>> P_conflict;
 
 private:
     int numberVertex=0;
-    void addFaceToVertex();
-    void addVertexToFace();
-    void deleteFaceFromVertex();
-    void deleteVertexFromFace();
+    void addFaceToVertex(Dcel::Face* face, Dcel::Vertex* vertex);
+    void addVertexToFace(Dcel::Vertex* vertex, Dcel::Face* face);
+    void deleteFaceFromVertex(Dcel::Face* face, Dcel::Vertex* vertex);
+    void deleteVertexFromFace(Dcel::Vertex* vertex, Dcel::Face* face);
 };
 
 #endif // CONFLICTGRAPH_H

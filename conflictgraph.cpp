@@ -41,7 +41,8 @@ void ConflictGraph::initializeCG(){
             matrix(3,3) = 1;
 
             if(matrix.determinant() > std::numeric_limits<double>::epsilon()){//nella
-
+                addFaceToVertex( face, vertexS[point]);
+                addVertexToFace( vertexS[point], face);
             }
         }
     }
@@ -51,7 +52,7 @@ void ConflictGraph::initializeCG(){
  * @brief ConvexHullCore::addFaceToVertex()
  * This method is the used to insert the face f that is in conflict with the vertex v
  */
-void ConflictGraph::addFaceToVertex(){
+void ConflictGraph::addFaceToVertex(Dcel::Face* face, Dcel::Vertex* vertex){
     
 }
 
@@ -59,7 +60,7 @@ void ConflictGraph::addFaceToVertex(){
  * @brief ConvexHullCore::addVertexToFace()
  * This method is the used to insert the vertex v that is in conflict with the face f
  */
-void ConflictGraph::addVertexToFace(){
+void ConflictGraph::addVertexToFace(Dcel::Vertex* vertex,Dcel::Face* face){
     
 }
 
@@ -67,7 +68,7 @@ void ConflictGraph::addVertexToFace(){
  * @brief ConvexHullCore::deleteFaceFromVertex()
  * This method is the used to delete the face f from the vertex v, because the face f is not in conflict
  */
-void ConflictGraph::deleteFaceFromVertex(){
+void ConflictGraph::deleteFaceFromVertex(Dcel::Face* face, Dcel::Vertex* vertex){
     
 }
 
@@ -75,7 +76,7 @@ void ConflictGraph::deleteFaceFromVertex(){
  * @brief ConvexHullCore::deleteVertexFromFace()
  * This method is the used to delete the vertex v from the face f, because the vertex v is not in conflict
  */
-void ConflictGraph::deleteVertexFromFace(){
+void ConflictGraph::deleteVertexFromFace(Dcel::Vertex* vertex,Dcel::Face* face){
     
 }
 
