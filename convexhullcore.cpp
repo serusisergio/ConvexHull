@@ -79,7 +79,7 @@ bool ConvexHullCore::isCoplanar(){
  * This method is executed to execute the permutation of the vertexs
  * http://www.cplusplus.com/reference/algorithm/random_shuffle/
  */
-void ConvexHullCore::getPermutation(){
+void ConvexHullCore::executePermutation(){
     do{
        std::random_shuffle(this->vertexS.begin(), this->vertexS.end());
     }while(isCoplanar());
@@ -171,11 +171,18 @@ void ConvexHullCore::setTetrahedron(){
  */
 void ConvexHullCore::findConvexHull(){
     getVertexs();
-    getPermutation();
+
+    //Calcola una permutazione random degli n punti
+    executePermutation();
     
     this->dcel->reset();
 
+    //Trova 4 punti che formano il tetraedro (quindi il convex hull di questi 4 punti)
     setTetrahedron();
+
+    //Inizializza il conflict graph con tutte le coppie visibili (Pt,f) con f faccia in dcel e t>4 (quindi con i punti successivi)
+    ConflictGraph conflictGraph=ConflictGraph(this->dcel, this-> vertexS);
+    conflictGraph.initializeCG();
 
         
 }

@@ -13,6 +13,7 @@
 #include "lib/common/timer.h"
 #include <math.h>
 #include <eigen3/Eigen/Dense>
+#include <GUI/conflictgraph.h>
 #include <iostream>
 
 using namespace Eigen;
@@ -32,7 +33,7 @@ private:
     //method
     bool verifyEuleroProperty();
     void getVertexs();
-    void getPermutation();
+    void executePermutation();
     bool isCoplanar();
     void setTetrahedron();
 
