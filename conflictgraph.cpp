@@ -18,6 +18,30 @@ ConflictGraph::ConflictGraph(DrawableDcel *dcel, std::vector<Dcel::Vertex*> &ver
  * t > 4 (because the 4 points are already in the dcel)
  */
 void ConflictGraph::initializeCG(){
+    Matrix<double,4,4> matrix;
+    
+    for (Dcel::FaceIterator fit = dcel->faceBegin(); fit != dcel->faceEnd(); ++fit){
+        Dcel::Face* face= *fit;
 
+        int k=0;
+        for(Dcel::Face::IncidentVertexIterator vit = face->incidentVertexBegin(); vit != face->incidentVertexEnd(); ++vit,k++){
+            Dcel::Vertex* vertex=*vit;
+            Pointd p= vertex->getCoordinate();
+            matrix(k,0) = p.x();
+            matrix(k,1) = p.y();
+            matrix(k,2) = p.z();
+            matrix(k,3) = 1;
+        }
+
+        for(int point=4; point<numberVertex; point++){
+            Pointd p=vertexS[point]->getCoordinate();
+            matrix(3,0) = p.x();
+            matrix(3,1) = p.y();
+            matrix(3,2) = p.z();
+            matrix(3,3) = 1;
+
+            double det = matrix.determinant();
+        }
+    }
 }
 
