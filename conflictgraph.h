@@ -24,8 +24,8 @@ public:
     //OggettiVariali creati in questa classe
     //bisogna usare una lista, vista l'esigenza di eliminare ed aggiornare spesso è la soluzione migliore, il vettore è poco dinamico, per eliminare un oggetto bisogna
     //successivmente risistemare tutti gli elementi del vettore. Verrà usata la lista, come consigliato a lezione e tutoraggio.
-    std::map<Dcel::Face*, std::list<Dcel::Vertex*>> F_conflict;
-    std::map<Dcel::Vertex*, std::list<Dcel::Face*>> P_conflict;
+    std::map<Dcel::Face*, std::list<Dcel::Vertex*>> f_conflict;
+    std::map<Dcel::Vertex*, std::list<Dcel::Face*>> v_conflict;
 
 private:
     int numberVertex=0;

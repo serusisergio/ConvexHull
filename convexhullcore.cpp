@@ -37,7 +37,7 @@ bool ConvexHullCore::verifyEuleroProperty(){
  */
 void ConvexHullCore::getVertexs(){
     int n=0;
-    Dcel::VertexIterator vit;    
+    Dcel::VertexIterator vit;
     for(vit = this->dcel->vertexBegin(); vit != this->dcel->vertexEnd(); ++vit){
         this->vertexS[n] = *vit;
         n++;
@@ -184,5 +184,5 @@ void ConvexHullCore::findConvexHull(){
     ConflictGraph conflictGraph=ConflictGraph(this->dcel, this-> vertexS);
     conflictGraph.initializeCG();
 
-        
+
 }
