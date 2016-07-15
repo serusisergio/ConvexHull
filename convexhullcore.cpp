@@ -3,7 +3,7 @@
 ConvexHullCore::ConvexHullCore(DrawableDcel *dcel)
 {
     this->dcel    = dcel;
-    this->vertexS = std::vector<Dcel::Vertex*>(dcel->getNumberVertices());
+    this->vertexS  = std::vector<Dcel::Vertex*>(dcel->getNumberVertices());
 
 }
 
@@ -38,8 +38,9 @@ bool ConvexHullCore::verifyEuleroProperty(){
 void ConvexHullCore::getVertexs(){
     int n=0;
     Dcel::VertexIterator vit;
-    for(vit = this->dcel->vertexBegin(); vit != this->dcel->vertexEnd(); ++vit){
-        this->vertexS[n] = *vit;
+    for(vit = dcel->vertexBegin(); vit != dcel->vertexEnd(); ++vit){
+        Dcel::Vertex* vt=new Dcel::Vertex(**vit);
+        this->vertexS[n] = vt;
         n++;
     }
 }
@@ -184,5 +185,8 @@ void ConvexHullCore::findConvexHull(){
     ConflictGraph conflictGraph=ConflictGraph(this->dcel, this-> vertexS);
     conflictGraph.initializeCG();
 
+    for(std::vector<Dcel::Vertex*>::iterator it = vertexS.begin(); it != vertexS.end(); ++it){
+            dcel->addDebugSphere((*it)->getCoordinate(), 0.01, QColor(255,0,0));
+    }
 
 }
