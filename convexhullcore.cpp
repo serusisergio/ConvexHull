@@ -38,10 +38,8 @@ bool ConvexHullCore::verifyEuleroProperty(){
 void ConvexHullCore::getVertexs(){
     int n=0;
     Dcel::VertexIterator vit;
-    for(vit = dcel->vertexBegin(); vit != dcel->vertexEnd(); ++vit){
-        Dcel::Vertex* vt=new Dcel::Vertex(**vit);
-        this->vertexS[n] = vt;
-        n++;
+    for(vit = dcel->vertexBegin(); vit != dcel->vertexEnd(); ++vit,n++){
+        this->vertexS[n] = new Dcel::Vertex(**vit);
     }
 }
 
