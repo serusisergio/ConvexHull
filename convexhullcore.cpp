@@ -190,8 +190,17 @@ void ConvexHullCore::findConvexHull(){
     //Ciclo principlae sei punti, dal punto 4 fino alla fine
     for(;point_i != vertexS.end(); ++point_i){
 
-        //Inserimento punto nella dcel
-        Dcel::Vertex* currentVertex = this->dcel->addVertex(**point_i);
+
+        std::list<Dcel::Face*>* facesVisibleByVertex=vconflictGraph.getFacesVisibleByVertex(*point_i);
+
+
+        //Se il punto corrente non è all'interno del convex hull, allora bisogna aggiornare il convexhull
+        if(facesVisibleByVertex->size() > 0){
+
+            //Inserimento punto nella dcel
+            Dcel::Vertex* currentVertex = this->dcel->addVertex(**point_i);
+
+        }
     }
 
 
