@@ -2,8 +2,9 @@
 
 ConvexHullCore::ConvexHullCore(DrawableDcel *dcel)
 {
-    this->dcel    = dcel;
-    this->vertexS  = std::vector<Dcel::Vertex*>(dcel->getNumberVertices());
+    this->dcel         = dcel;
+    this->numberVertex = dcel->getNumberVertices();
+    this->vertexS      = std::vector<Dcel::Vertex*>(numberVertex);
 
 }
 
@@ -13,11 +14,6 @@ ConvexHullCore::ConvexHullCore(DrawableDcel *dcel)
  * @return True if the dcel respects the property, False otherwhise
  */
 bool ConvexHullCore::verifyEuleroProperty(){
-    /*
-    cout << "Numero di facce " <<dcel->getNumberFaces()<< endl;
-    cout << "Numero di vertici " <<dcel->getNumberVertices()<< endl;
-    cout << "Numero di edge " <<dcel->getNumberHalfEdges()/2<<endl;
-    */
     int numberFace  = dcel->getNumberFaces();
     int numberVertex= dcel->getNumberVertices();
     int numberEdge  = dcel->getNumberHalfEdges()/2;
@@ -169,11 +165,14 @@ void ConvexHullCore::setTetrahedron(){
  * This method, is the principal method of the class
  */
 void ConvexHullCore::findConvexHull(){
+
+
     getVertexs();
 
     //Calcola una permutazione random degli n punti
     executePermutation();
     
+    //Pulizia della dcel, che conterrà il convex hull alla fine dell'algoritmo
     this->dcel->reset();
 
     //Trova 4 punti che formano il tetraedro (quindi il convex hull di questi 4 punti)
@@ -183,8 +182,44 @@ void ConvexHullCore::findConvexHull(){
     ConflictGraph conflictGraph=ConflictGraph(this->dcel, this-> vertexS);
     conflictGraph.initializeCG();
 
+    //Creazione iteratore, e settarlo al quarto vertice, per far partire il ciclo del convexhull
+    std::vector<Dcel::Vertex*>::iterator point_i = vertexS.begin();
+    for(int i=0;i<4;i++,point_i++)
+
+
+    //Ciclo principlae sei punti, dal punto 4 fino alla fine
+    for(;point_i != vertexS.end(); ++point_i){
+
+        //Inserimento punto nella dcel
+        Dcel::Vertex* currentVertex = this->dcel->addVertex(**point_i);
+    }
+
+
+
+    /*
+    // Create a n adjacency list, add some vertices.
+    boost::adjacency_list<> g;
+
+    // Add edges between vertices.
+    boost::add_edge(0, 3, g);
+    boost::add_edge(1, 3, g);
+    boost::add_edge(1, 4, g);
+    boost::add_edge(2, 1, g);
+    boost::add_edge(3, 5, g);
+    boost::add_edge(4, 6, g);
+    boost::add_edge(5, 6, g);
+
+    boost::add_vertex(8,g)
+
+
+    std::pair<boost::adjacency_list<>::vertex_iterator,boost::adjacency_list<>::vertex_iterator> vs = boost::vertices(g);
+
+    std::copy(vs.first, vs.second,std::ostream_iterator<boost::adjacency_list<>::vertex_descriptor>{std::cout, "\n"});
+
+    */
     for(std::vector<Dcel::Vertex*>::iterator it = vertexS.begin(); it != vertexS.end(); ++it){
             dcel->addDebugSphere((*it)->getCoordinate(), 0.01, QColor(255,0,0));
     }
+
 
 }

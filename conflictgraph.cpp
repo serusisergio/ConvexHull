@@ -45,31 +45,35 @@ void ConflictGraph::initializeCG(){
                 addVertexToFace( vertexS[point], face);
             }
         }
-        /*
+
         std::list<Dcel::Vertex*>* stampa= f_conflict[face];
         std::list<Dcel::Vertex*>::iterator p;
         int z=0;
 
-        for (p = stampa.begin(); p != stampa.end(); p++){
+
+        for (p = stampa->begin(); p != stampa->end(); p++){
                 cout << "Elemento " << z++ << ": " << *p <<" della lista della faccia "<<face->getId()<< endl;
         }
-        */
+
 
     }
 
-    /*
+
     for(int point=4; point<numberVertex; point++){
+        cout<<"Vertex s "<<point<<"   : "<<vertexS[point]<<endl;
+
         std::list<Dcel::Face*>* stampa= v_conflict[vertexS[point]];
         std::list<Dcel::Face*>::iterator p;
         int z=0;
-
-        for (p = stampa.begin(); p != stampa.end(); p++){
-                cout << "Elemento " << z++ << ": " << *p <<" della lista del vertice "<<point<< endl;
+        if(stampa!=nullptr){
+            for (p = stampa->begin(); p != stampa->end(); p++){
+                    cout << "Elemento " << z++ << ": " << *p <<" della lista del vertice "<<point<< endl;
+            }
         }
 
 
     }
-    */
+
 
 }
 
@@ -94,7 +98,7 @@ bool ConflictGraph::isVisible(Dcel::Vertex *vertex, Dcel::Face *face){
     matrix(3,2) = p.z();
     matrix(3,3) = 1;
 
-    return matrix.determinant() > std::numeric_limits<double>::epsilon();//return true (1)
+    return (matrix.determinant() > std::numeric_limits<double>::epsilon());//return true (1) if the point is visible by the face
 }
 
 
