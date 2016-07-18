@@ -175,10 +175,14 @@ void ConflictGraph::deleteVertexFromFace(Dcel::Vertex* vertex,Dcel::Face* face){
  */
 std::list<Dcel::Face *>* ConflictGraph::getFacesVisibleByVertex(Dcel::Vertex *vertex){
     auto iter =this->v_conflict.find(vertex);
+    cout<<"getFaces 0"<<endl;
     if(iter!=v_conflict.end()){
+        cout<<"getFaces true"<<endl;
         return v_conflict.at(vertex);
     }else{
-        return new std::list<Dcel::Face *>();
+        cout<<"getFaces new"<<endl;
+
+        return new std::list<Dcel::Face*>();
     }
 }
 

@@ -1,7 +1,7 @@
 #include "convexhullcore.h"
 
-ConvexHullCore::ConvexHullCore(DrawableDcel *dcel)
-{
+ConvexHullCore::ConvexHullCore(DrawableDcel *dcel){
+
     this->dcel         = dcel;
     this->numberVertex = dcel->getNumberVertices();
     this->vertexS      = std::vector<Dcel::Vertex*>(numberVertex);
@@ -14,11 +14,12 @@ ConvexHullCore::ConvexHullCore(DrawableDcel *dcel)
  * @return True if the dcel respects the property, False otherwhise
  */
 bool ConvexHullCore::verifyEuleroProperty(){
-    int numberFace  = dcel->getNumberFaces();
-    int numberVertex= dcel->getNumberVertices();
-    int numberEdge  = dcel->getNumberHalfEdges()/2;
 
-    int euler=numberVertex-numberFace+numberEdge;
+    int numberFace   = dcel->getNumberFaces();
+    int numberVertex = dcel->getNumberVertices();
+    int numberEdge   = dcel->getNumberHalfEdges()/2;
+
+    int euler        = numberVertex-numberFace+numberEdge;
 
     if(euler==2){
         return true;
@@ -32,10 +33,10 @@ bool ConvexHullCore::verifyEuleroProperty(){
  * This method is executed to get all the vertex of the dcel
  */
 void ConvexHullCore::getVertexs(){
-    int n=0;
-    Dcel::VertexIterator vit;
-    for(vit = dcel->vertexBegin(); vit != dcel->vertexEnd(); ++vit,n++){
-        this->vertexS[n] = new Dcel::Vertex(**vit);
+
+    std::vector<Dcel::Vertex*>::iterator vectIt = vertexS.begin();
+    for(Dcel::VertexIterator vit = dcel->vertexBegin(); vit != dcel->vertexEnd() && vectIt != vertexS.end(); ++vit,++vectIt){
+        *vectIt = new Dcel::Vertex(**vit);
     }
 }
 
@@ -75,6 +76,7 @@ bool ConvexHullCore::isCoplanar(){
  * http://www.cplusplus.com/reference/algorithm/random_shuffle/
  */
 void ConvexHullCore::executePermutation(){
+
     do{
        std::random_shuffle(this->vertexS.begin(), this->vertexS.end());
     }while(isCoplanar());
@@ -90,16 +92,16 @@ void ConvexHullCore::setTetrahedron(){
     //CREAZIONE TETRAEDRO
 
     //CREAZIONE TRIANGOLO
-    std::vector<Dcel::Vertex*> vertexInitial = std::vector<Dcel::Vertex*>(3); //conterrà i vertici per formare la base
+    std::vector<Dcel::Vertex*> vertexInitial  = std::vector<Dcel::Vertex*>(3);  //conterrà i vertici per formare la base
     std::vector<Dcel::HalfEdge*> heInTriangle = std::vector<Dcel::HalfEdge*>(3);//conterrà gli halfedge per formare la base
 
     //HalfEdge del Tetraedro
-    std::vector<Dcel::HalfEdge*> heInTetrahedron = std::vector<Dcel::HalfEdge*>(9);
+    std::vector<Dcel::HalfEdge*> heInTetrahedron = std::vector<Dcel::HalfEdge*>(9);//conterrà gli halfedge per completare il tetraedro
 
     //Creazione vertici della Base
     for(unsigned int i=0;i<3;i++){
-        vertexInitial[i] =this->dcel->addVertex(*this->vertexS[i]);
-        heInTriangle[i]= this->dcel->addHalfEdge();
+        vertexInitial[i] = this->dcel->addVertex(*this->vertexS[i]);
+        heInTriangle[i]  = this->dcel->addHalfEdge();
     }
 
     //Creazione faccia della base
@@ -157,53 +159,6 @@ void ConvexHullCore::setTetrahedron(){
 
         k++;
     }
-}
-
-/**
- * @brief ConvexHullCore::findConvexHull()
- * This method is executed to find the convex hull given a set of points (contains into dcel)
- * This method, is the principal method of the class
- */
-void ConvexHullCore::findConvexHull(){
-
-
-    getVertexs();
-
-    //Calcola una permutazione random degli n punti
-    executePermutation();
-    
-    //Pulizia della dcel, che conterrà il convex hull alla fine dell'algoritmo
-    this->dcel->reset();
-
-    //Trova 4 punti che formano il tetraedro (quindi il convex hull di questi 4 punti)
-    setTetrahedron();
-
-    //Inizializza il conflict graph con tutte le coppie visibili (Pt,f) con f faccia in dcel e t>4 (quindi con i punti successivi)
-    ConflictGraph conflictGraph=ConflictGraph(this->dcel, this-> vertexS);
-    conflictGraph.initializeCG();
-
-    //Creazione iteratore, e settarlo al quarto vertice, per far partire il ciclo del convexhull
-    std::vector<Dcel::Vertex*>::iterator point_i = vertexS.begin();
-    for(int i=0;i<4;i++,point_i++)
-
-
-    //Ciclo principlae sei punti, dal punto 4 fino alla fine
-    for(;point_i != vertexS.end(); ++point_i){
-
-
-        std::list<Dcel::Face*>* facesVisibleByVertex=vconflictGraph.getFacesVisibleByVertex(*point_i);
-
-
-        //Se il punto corrente non è all'interno del convex hull, allora bisogna aggiornare il convexhull
-        if(facesVisibleByVertex->size() > 0){
-
-            //Inserimento punto nella dcel
-            Dcel::Vertex* currentVertex = this->dcel->addVertex(**point_i);
-
-        }
-    }
-
-
 
     /*
     // Create a n adjacency list, add some vertices.
@@ -226,6 +181,54 @@ void ConvexHullCore::findConvexHull(){
     std::copy(vs.first, vs.second,std::ostream_iterator<boost::adjacency_list<>::vertex_descriptor>{std::cout, "\n"});
 
     */
+}
+
+/**
+ * @brief ConvexHullCore::findConvexHull()
+ * This method is executed to find the convex hull given a set of points (contains into dcel)
+ * This method, is the principal method of the class
+ */
+void ConvexHullCore::findConvexHull(){
+
+    //Salva i vertici della dcel in un vector (vertexS) perchè alla dcel verra chiamato reset()
+    getVertexs();
+
+    //Calcola una permutazione random degli n punti
+    executePermutation();
+    
+    //Pulizia della dcel, che conterrà il convex hull alla fine dell'algoritmo
+    this->dcel->reset();
+
+    //Trova 4 punti che formano il tetraedro (quindi il convex hull di questi 4 punti)
+    setTetrahedron();
+
+    //Inizializza il conflict graph con tutte le coppie visibili (Pt,f) con f faccia in dcel e t>4 (quindi con i punti successivi)
+    ConflictGraph conflictGraph=ConflictGraph(this->dcel, this-> vertexS);
+    conflictGraph.initializeCG();
+
+    //Ciclo principlae sei punti, dal punto 4 fino alla fine
+    for(unsigned int point_i=4; point_i < vertexS.size(); point_i++){
+        Dcel::Vertex* vv=vertexS[point_i];
+
+        std::list<Dcel::Face*>* facesVisibleByVertex=conflictGraph.getFacesVisibleByVertex(vv);
+
+
+        cout<<"CIclo punto "<< vv->getId()<<endl;
+
+        //Se il punto corrente non è all'interno del convex hull, allora bisogna aggiornare il convexhull
+        if(facesVisibleByVertex!=nullptr){
+            cout<<"Aggiunto vertice alla DCEL "<<endl;
+
+            //Inserimento punto nella dcel
+            //Dcel::Vertex* currentVertex = this->dcel->addVertex(**point_i);
+
+        }
+
+        //conflictGraph.deleteVertexFromFace();
+        //conflictGraph.deleteFaceFromVertex();
+    }
+
+
     for(std::vector<Dcel::Vertex*>::iterator it = vertexS.begin(); it != vertexS.end(); ++it){
             dcel->addDebugSphere((*it)->getCoordinate(), 0.01, QColor(255,0,0));
     }
