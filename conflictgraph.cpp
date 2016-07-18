@@ -46,6 +46,8 @@ void ConflictGraph::initializeCG(){
             }
         }
 
+
+        /*
         std::list<Dcel::Vertex*>* stampa= f_conflict[face];
         std::list<Dcel::Vertex*>::iterator p;
         int z=0;
@@ -54,11 +56,11 @@ void ConflictGraph::initializeCG(){
         for (p = stampa->begin(); p != stampa->end(); p++){
                 cout << "Elemento " << z++ << ": " << *p <<" della lista della faccia "<<face->getId()<< endl;
         }
-
+        */
 
     }
 
-
+    /*
     for(int point=4; point<numberVertex; point++){
         cout<<"Vertex s "<<point<<"   : "<<vertexS[point]<<endl;
 
@@ -72,7 +74,7 @@ void ConflictGraph::initializeCG(){
         }
 
 
-    }
+    }*/
 
 
 }
@@ -175,13 +177,9 @@ void ConflictGraph::deleteVertexFromFace(Dcel::Vertex* vertex,Dcel::Face* face){
  */
 std::list<Dcel::Face *>* ConflictGraph::getFacesVisibleByVertex(Dcel::Vertex *vertex){
     auto iter =this->v_conflict.find(vertex);
-    cout<<"getFaces 0"<<endl;
     if(iter!=v_conflict.end()){
-        cout<<"getFaces true"<<endl;
         return v_conflict.at(vertex);
     }else{
-        cout<<"getFaces new"<<endl;
-
         return new std::list<Dcel::Face*>();
     }
 }
