@@ -42,6 +42,8 @@ private:
     void executePermutation();
     bool isCoplanar();
     void setTetrahedron();
+    std::list<Dcel::HalfEdge*>* getHorizon(std::list<Dcel::Face*>* facesVisibleByVertex,Dcel::Vertex* currentVertex);
+
 
     //variable
     DrawableDcel* dcel;

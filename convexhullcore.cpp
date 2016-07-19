@@ -185,6 +185,22 @@ void ConvexHullCore::setTetrahedron(){
 }
 
 /**
+ * @brief ConvexHullCore::getHorizon()
+ * This method is executed to find the horizon by a faces visible by a vertex
+ * This method, return a pointer of the horizon list
+ */
+std::list<Dcel::HalfEdge*>* ConvexHullCore::getHorizon(std::list<Dcel::Face *> *facesVisibleByVertex, Dcel::Vertex *currentVertex){
+    std::list<Dcel::HalfEdge*> horizon;
+    
+    for(std::list<Dcel::Face*>::iterator fit = facesVisibleByVertex->begin(); fit != facesVisibleByVertex->end(); ++fit){
+        Dcel::Face* currentFace = *fit;
+        currentFace->
+
+        //for(Dcel::Face::){        }
+    }
+}
+
+/**
  * @brief ConvexHullCore::findConvexHull()
  * This method is executed to find the convex hull given a set of points (contains into dcel)
  * This method, is the principal method of the class
@@ -210,16 +226,18 @@ void ConvexHullCore::findConvexHull(){
     //Ciclo principlae sei punti, dal punto 4 fino alla fine
     for(unsigned int point_i=4; point_i < vertexS.size(); point_i++){
         Dcel::Vertex* currentVertex=vertexS[point_i];
-        Pointd currentPoint= vertexS[point_i]->getCoordinate();
         cout<<"Current vertex->"<<currentVertex->getId()<<endl;
 
         std::list<Dcel::Face*>* facesVisibleByVertex=conflictGraph.getFacesVisibleByVertex(currentVertex);
+        std::list<Dcel::HalfEdge*> orizzonte;
+
 
         //Se il punto corrente non è all'interno del convex hull, allora bisogna aggiornare il convexhull
         if(facesVisibleByVertex->size()>0){
 
             //Inserimento punto nella dcel
-            Dcel::Vertex* newVertex = dcel->addVertex(currentPoint);
+            Dcel::Vertex* currentPoint = dcel->addVertex(vertexS[point_i]->getCoordinate());
+
             //newVertex->setCardinality(0);
             cout<<"Aggiunto vertice alla DCEL "<<endl;
             //dcel->deleteVertex(newVertex);
@@ -227,7 +245,6 @@ void ConvexHullCore::findConvexHull(){
 
         conflictGraph.deleteVertexFromFace(currentVertex);
         conflictGraph.deleteFaceFromVertex(facesVisibleByVertex);
-        //conflictGraph.deleteFaceAndVertex(facesVisibleByVertex,currentVertex);
     }
 
 
