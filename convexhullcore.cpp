@@ -161,27 +161,6 @@ void ConvexHullCore::setTetrahedron(){
         k++;
     }
 
-    /*
-    // Create a n adjacency list, add some vertices.
-    boost::adjacency_list<> g;
-
-    // Add edges between vertices.
-    boost::add_edge(0, 3, g);
-    boost::add_edge(1, 3, g);
-    boost::add_edge(1, 4, g);
-    boost::add_edge(2, 1, g);
-    boost::add_edge(3, 5, g);
-    boost::add_edge(4, 6, g);
-    boost::add_edge(5, 6, g);
-
-    boost::add_vertex(8,g)
-
-
-    std::pair<boost::adjacency_list<>::vertex_iterator,boost::adjacency_list<>::vertex_iterator> vs = boost::vertices(g);
-
-    std::copy(vs.first, vs.second,std::ostream_iterator<boost::adjacency_list<>::vertex_descriptor>{std::cout, "\n"});
-
-    */
 }
 
 /**
@@ -189,14 +168,25 @@ void ConvexHullCore::setTetrahedron(){
  * This method is executed to find the horizon by a faces visible by a vertex
  * This method, return a pointer of the horizon list
  */
-std::list<Dcel::HalfEdge*>* ConvexHullCore::getHorizon(std::list<Dcel::Face *> *facesVisibleByVertex, Dcel::Vertex *currentVertex){
-    std::list<Dcel::HalfEdge*> horizon;
-    
-    for(std::list<Dcel::Face*>::iterator fit = facesVisibleByVertex->begin(); fit != facesVisibleByVertex->end(); ++fit){
-        Dcel::Face* currentFace = *fit;
-        currentFace->
+std::set<Dcel::HalfEdge*>* ConvexHullCore::getHorizon(std::set<Dcel::Face *> *facesVisibleByVertex, Dcel::Vertex *currentVertex){
+    std::set<Dcel::HalfEdge*> horizon;
 
-        //for(Dcel::Face::){        }
+    
+    for(std::set<Dcel::Face*>::iterator fit = facesVisibleByVertex->begin(); fit != facesVisibleByVertex->end(); ++fit){
+        Dcel::Face* currentFace = *fit;
+
+        Dcel::HalfEdge* outerHE= currentFace->getOuterHalfEdge();
+        
+        for(int i=0;i<2;i++){
+            Dcel::Face* faceTwin=outerHE->getTwin()->getFace();
+
+            if(facesVisibleByVertex->count(faceTwin) == 0){
+                horizon.insert(outerHE);
+            }
+
+            outerHE = outerHE->getNext();
+        }
+
     }
 }
 
@@ -228,8 +218,8 @@ void ConvexHullCore::findConvexHull(){
         Dcel::Vertex* currentVertex=vertexS[point_i];
         cout<<"Current vertex->"<<currentVertex->getId()<<endl;
 
-        std::list<Dcel::Face*>* facesVisibleByVertex=conflictGraph.getFacesVisibleByVertex(currentVertex);
-        std::list<Dcel::HalfEdge*> orizzonte;
+        std::set<Dcel::Face*>* facesVisibleByVertex=conflictGraph.getFacesVisibleByVertex(currentVertex);
+        std::set<Dcel::HalfEdge*> orizzonte;
 
 
         //Se il punto corrente non è all'interno del convex hull, allora bisogna aggiornare il convexhull

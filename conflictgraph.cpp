@@ -121,11 +121,11 @@ void ConflictGraph::addFaceToVertex(Dcel::Face* face, Dcel::Vertex* vertex){
     */
     auto iter =this->v_conflict.find(vertex);
     if(iter!=v_conflict.end()){
-        std::list<Dcel::Face*>* faceList = v_conflict[vertex];
-        faceList->push_back(face);
+        std::set<Dcel::Face*>* faceList = v_conflict[vertex];
+        faceList->insert(face);
     }else{
-        std::list<Dcel::Face*>* faceList = new std::list<Dcel::Face*>();
-        faceList->push_back(face);
+        std::set<Dcel::Face*>* faceList = new std::set<Dcel::Face*>();
+        faceList->insert(face);
         v_conflict[vertex]=faceList;
     }
 }
@@ -145,11 +145,11 @@ void ConflictGraph::addVertexToFace(Dcel::Vertex* vertex,Dcel::Face* face){
     */
     auto iter =this->f_conflict.find(face);
     if(iter!=f_conflict.end()){
-        std::list<Dcel::Vertex*>* vertexList = f_conflict[face];
-        vertexList->push_back(vertex);
+        std::set<Dcel::Vertex*>* vertexList = f_conflict[face];
+        vertexList->insert(vertex);
     }else{
-        std::list<Dcel::Vertex*>* vertexList = new std::list<Dcel::Vertex*>();
-        vertexList->push_back(vertex);
+        std::set<Dcel::Vertex*>* vertexList = new std::set<Dcel::Vertex*>();
+        vertexList->insert(vertex);
         f_conflict[face]=vertexList;
     }
 }
@@ -158,14 +158,14 @@ void ConflictGraph::addVertexToFace(Dcel::Vertex* vertex,Dcel::Face* face){
  * @brief ConflictGraph::deleteFaceFromVertex()
  * This method is the used to delete the face f from the vertex v, because the face f is not in conflict
  */
-void ConflictGraph::deleteFaceFromVertex(std::list<Dcel::Face*> *faces){
+void ConflictGraph::deleteFaceFromVertex(std::set<Dcel::Face*> *faces){
 
-    for(std::list<Dcel::Face*>::iterator face = faces->begin(); face!= faces->end(); ++face){
+    for(std::set<Dcel::Face*>::iterator face = faces->begin(); face!= faces->end(); ++face){
 
-        std::map<Dcel::Vertex*, std::list<Dcel::Face*>*>::iterator vertexIt =v_conflict.begin();
+        std::map<Dcel::Vertex*, std::set<Dcel::Face*>*>::iterator vertexIt =v_conflict.begin();
         for(; vertexIt != v_conflict.end(); ++vertexIt){
             if(vertexIt->second->size()>0){
-                vertexIt->second->remove(*face);
+                vertexIt->second->erase(*face);
             }
         }
         f_conflict.erase(*face);
@@ -180,15 +180,15 @@ void ConflictGraph::deleteVertexFromFace(Dcel::Vertex* vertex){
     
     v_conflict.erase(vertex);
 
-     for(std::map<Dcel::Face*, std::list<Dcel::Vertex*>*>::iterator fit = f_conflict.begin(); fit != f_conflict.end(); ++fit){
+     for(std::map<Dcel::Face*, std::set<Dcel::Vertex*>*>::iterator fit = f_conflict.begin(); fit != f_conflict.end(); ++fit){
          if(fit->second != nullptr){
-             fit->second->remove(vertex);
+             fit->second->erase(vertex);
          }
  }
     
 }
 
-void ConflictGraph::deleteFaceAndVertex(std::list<Dcel::Face *>* faces, Dcel::Vertex* vertex){
+void ConflictGraph::deleteFaceAndVertex(std::set<Dcel::Face *>* faces, Dcel::Vertex* vertex){
 
     /*
     //Se la lista delle facce visibili da vertex non è vuota allora cancellale
@@ -215,12 +215,12 @@ void ConflictGraph::deleteFaceAndVertex(std::list<Dcel::Face *>* faces, Dcel::Ve
  * @brief ConflictGraph::getFacesVisibleByVertex()
  * This method return the faces that are in conflict with vertex
  */
-std::list<Dcel::Face *>* ConflictGraph::getFacesVisibleByVertex(Dcel::Vertex *vertex){
+std::set<Dcel::Face *>* ConflictGraph::getFacesVisibleByVertex(Dcel::Vertex *vertex){
     auto iter =this->v_conflict.find(vertex);
     if(iter!=v_conflict.end()){
         return v_conflict.at(vertex);
     }else{
-        return new std::list<Dcel::Face*>();
+        return new std::set<Dcel::Face*>();
     }
 }
 
@@ -228,11 +228,11 @@ std::list<Dcel::Face *>* ConflictGraph::getFacesVisibleByVertex(Dcel::Vertex *ve
  * @brief ConflictGraph::getVertexVisibleByFace()
  * This method return the vertexs that are in conflict with the face f
  */
-std::list<Dcel::Vertex *>* ConflictGraph::getVertexVisibleByFace(Dcel::Face *face){
+std::set<Dcel::Vertex *>* ConflictGraph::getVertexVisibleByFace(Dcel::Face *face){
     auto iter =this->f_conflict.find(face);
     if(iter!=f_conflict.end()){
         return f_conflict.at(face);
     }else{
-        return new std::list<Dcel::Vertex *>();
+        return new std::set<Dcel::Vertex *>();
     }
 }
