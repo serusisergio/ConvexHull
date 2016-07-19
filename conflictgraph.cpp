@@ -158,16 +158,56 @@ void ConflictGraph::addVertexToFace(Dcel::Vertex* vertex,Dcel::Face* face){
  * @brief ConflictGraph::deleteFaceFromVertex()
  * This method is the used to delete the face f from the vertex v, because the face f is not in conflict
  */
-void ConflictGraph::deleteFaceFromVertex(Dcel::Face* face, Dcel::Vertex* vertex){
-    //TODO
+void ConflictGraph::deleteFaceFromVertex(std::list<Dcel::Face*> *faces){
+
+    for(std::list<Dcel::Face*>::iterator face = faces->begin(); face!= faces->end(); ++face){
+
+        std::map<Dcel::Vertex*, std::list<Dcel::Face*>*>::iterator vertexIt =v_conflict.begin();
+        for(; vertexIt != v_conflict.end(); ++vertexIt){
+            if(vertexIt->second->size()>0){
+                vertexIt->second->remove(*face);
+            }
+        }
+        f_conflict.erase(*face);
+    }
 }
 
 /**
  * @brief ConflictGraph::deleteVertexFromFace()
  * This method is the used to delete the vertex v from the face f, because the vertex v is not in conflict
  */
-void ConflictGraph::deleteVertexFromFace(Dcel::Vertex* vertex,Dcel::Face* face){
-    //TODO
+void ConflictGraph::deleteVertexFromFace(Dcel::Vertex* vertex){
+    
+    v_conflict.erase(vertex);
+
+     for(std::map<Dcel::Face*, std::list<Dcel::Vertex*>*>::iterator fit = f_conflict.begin(); fit != f_conflict.end(); ++fit){
+         if(fit->second != nullptr){
+             fit->second->remove(vertex);
+         }
+ }
+    
+}
+
+void ConflictGraph::deleteFaceAndVertex(std::list<Dcel::Face *>* faces, Dcel::Vertex* vertex){
+
+    /*
+    //Se la lista delle facce visibili da vertex non è vuota allora cancellale
+    if(faces->size()>0){
+        for(auto i : *faces){
+            std::list<Dcel::Vertex *>* vertexs = f_conflict[i];
+            for(auto j : *vertexs){
+                std::list<Dcel::Face *>* face =v_conflict[j];
+                //face->erase(i);
+            }
+            cout<<"Faccia "<<i->getId()<<endl;
+
+        }
+    }
+    cout<<"____"<<endl;
+    //Elimina il vertice
+    v_conflict.erase(vertex);
+    */
+
 }
 
 

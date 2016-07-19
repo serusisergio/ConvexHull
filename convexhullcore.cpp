@@ -209,6 +209,7 @@ void ConvexHullCore::findConvexHull(){
     //Ciclo principlae sei punti, dal punto 4 fino alla fine
     for(unsigned int point_i=4; point_i < vertexS.size(); point_i++){
         Dcel::Vertex* currentVertex=vertexS[point_i];
+        cout<<"Current vertex->"<<currentVertex->getId()<<endl;
 
         std::list<Dcel::Face*>* facesVisibleByVertex=conflictGraph.getFacesVisibleByVertex(currentVertex);
 
@@ -221,14 +222,16 @@ void ConvexHullCore::findConvexHull(){
 
         }
 
-        //conflictGraph.deleteVertexFromFace();
-        //conflictGraph.deleteFaceFromVertex();
+        conflictGraph.deleteVertexFromFace(currentVertex);
+        conflictGraph.deleteFaceFromVertex(facesVisibleByVertex);
+        //conflictGraph.deleteFaceAndVertex(facesVisibleByVertex,currentVertex);
     }
 
 
     for(std::vector<Dcel::Vertex*>::iterator it = vertexS.begin(); it != vertexS.end(); ++it){
             dcel->addDebugSphere((*it)->getCoordinate(), 0.01, QColor(255,0,0));
     }
+
 
 
 }
