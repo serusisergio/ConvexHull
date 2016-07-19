@@ -100,7 +100,7 @@ void ConvexHullCore::setTetrahedron(){
 
     //Creazione vertici della Base
     for(unsigned int i=0;i<3;i++){
-        vertexInitial[i] = this->dcel->addVertex(*this->vertexS[i]);
+        vertexInitial[i] = this->dcel->addVertex(this->vertexS[i]->getCoordinate());
         heInTriangle[i]  = this->dcel->addHalfEdge();
     }
 
@@ -119,7 +119,7 @@ void ConvexHullCore::setTetrahedron(){
     f1->setOuterHalfEdge(heInTriangle[0]);
 
     //Aggiunta quarto vertice
-    Dcel::Vertex* v4 =this->dcel->addVertex(*this->vertexS[3]);
+    Dcel::Vertex* v4 =this->dcel->addVertex(this->vertexS[3]->getCoordinate());
 
     //AggiuntaHalfEdgeTetraedro
     for(unsigned int i=0;i<9;i++){
@@ -137,6 +137,7 @@ void ConvexHullCore::setTetrahedron(){
         heInTetrahedron[k]->setPrev(heInTetrahedron[ (k+2) ]);
         heInTetrahedron[k]->setFace(face);
         heInTetrahedron[k]->setTwin(heInTetrahedron[ (k+8)%9 ]);
+        v4->setIncidentHalfEdge(heInTetrahedron[k]);
 
         face->setOuterHalfEdge(heInTetrahedron[k]);
 
@@ -209,17 +210,19 @@ void ConvexHullCore::findConvexHull(){
     //Ciclo principlae sei punti, dal punto 4 fino alla fine
     for(unsigned int point_i=4; point_i < vertexS.size(); point_i++){
         Dcel::Vertex* currentVertex=vertexS[point_i];
+        Pointd currentPoint= vertexS[point_i]->getCoordinate();
         cout<<"Current vertex->"<<currentVertex->getId()<<endl;
 
         std::list<Dcel::Face*>* facesVisibleByVertex=conflictGraph.getFacesVisibleByVertex(currentVertex);
 
         //Se il punto corrente non è all'interno del convex hull, allora bisogna aggiornare il convexhull
         if(facesVisibleByVertex->size()>0){
-            cout<<"Aggiunto vertice alla DCEL "<<endl;
 
             //Inserimento punto nella dcel
-            //Dcel::Vertex* currentVertex = this->dcel->addVertex(**point_i);
-
+            Dcel::Vertex* newVertex = dcel->addVertex(currentPoint);
+            //newVertex->setCardinality(0);
+            cout<<"Aggiunto vertice alla DCEL "<<endl;
+            //dcel->deleteVertex(newVertex);
         }
 
         conflictGraph.deleteVertexFromFace(currentVertex);
