@@ -43,6 +43,7 @@ private:
     bool isCoplanar();
     void setTetrahedron();
     std::set<Dcel::HalfEdge*> getHorizon(std::set<Dcel::Face*>* facesVisibleByVertex,Dcel::Vertex* currentVertex);
+    void removeFacesVisibleByVertex(std::set<Dcel::Face*>* facesVisibleByVertex);
 
 
     //variable
