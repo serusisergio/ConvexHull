@@ -42,7 +42,7 @@ private:
     void executePermutation();
     bool isCoplanar();
     void setTetrahedron();
-    std::set<Dcel::HalfEdge*> getHorizon(std::set<Dcel::Face*>* facesVisibleByVertex,Dcel::Vertex* currentVertex);
+    std::list<Dcel::HalfEdge*> getHorizon(std::set<Dcel::Face*>* facesVisibleByVertex);
     void removeFacesVisibleByVertex(std::set<Dcel::Face*>* facesVisibleByVertex);
 
 

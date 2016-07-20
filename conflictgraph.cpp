@@ -100,7 +100,7 @@ bool ConflictGraph::isVisible(Dcel::Vertex *vertex, Dcel::Face *face){
     matrix(3,2) = p.z();
     matrix(3,3) = 1;
 
-    return (matrix.determinant() > std::numeric_limits<double>::epsilon());//return true (1) if the point is visible by the face
+    return (matrix.determinant() < -std::numeric_limits<double>::epsilon());
 }
 
 

@@ -177,20 +177,25 @@ void ConvexHullCore::setTetrahedron(){
  * This method is executed to find the horizon by a faces visible by a vertex
  * This method, return a pointer of the horizon list
  */
-std::set<Dcel::HalfEdge*> ConvexHullCore::getHorizon(std::set<Dcel::Face *> *facesVisibleByVertex, Dcel::Vertex *currentVertex){
-    std::set<Dcel::HalfEdge*> horizon;
+std::list<Dcel::HalfEdge*> ConvexHullCore::getHorizon(std::set<Dcel::Face *> *facesVisibleByVertex){
+    std::set<Dcel::HalfEdge*> horizonUnordered;
+    std::list<Dcel::HalfEdge*> horizonOrdered;
+    std::map<Dcel::Vertex*, Dcel::HalfEdge*> hm;
 
-    
+
+    //Trovo gli hE dell'orizzonte
+    //scorro tutte le facce visibili
     for(std::set<Dcel::Face*>::iterator fit = facesVisibleByVertex->begin(); fit != facesVisibleByVertex->end(); ++fit){
         Dcel::Face* currentFace = *fit;
         cout<<"FAccia ->"<<currentFace->getId();
         Dcel::HalfEdge* outerHE= currentFace->getOuterHalfEdge();
-        
+
+        //Per ogni faccia scorro gli half edge della faccia
         for(int i=0;i<3;i++){
             Dcel::Face* faceTwin=outerHE->getTwin()->getFace();
 
             if(facesVisibleByVertex->count(faceTwin) == 0){//se il twin dell'HE sta in una faccia non visibile, allora HE è proprio nell'orizzonte
-                horizon.insert(outerHE);
+                horizonUnordered.insert(outerHE);
                 cout<<"Inserimento HE nell'orizzonte ->"<<outerHE->getId()<<endl;
             }
 
@@ -198,8 +203,38 @@ std::set<Dcel::HalfEdge*> ConvexHullCore::getHorizon(std::set<Dcel::Face *> *fac
         }
 
     }
+    
+    //Oridno la lista degli HE dell'orizzonte
+    for(std::set<Dcel::HalfEdge*>::iterator heit= horizonUnordered.begin(); heit!= horizonUnordered.end() ; ++heit){
+        Dcel::HalfEdge* he= *heit;
+        hm[he->getFromVertex()]=he;
+    }
+    
 
-    return horizon;
+    int count=0;
+    for(std::set<Dcel::HalfEdge*>::iterator heit= horizonUnordered.begin(); heit!= horizonUnordered.end() ; ++heit){
+        Dcel::HalfEdge* he;//il precedente
+        if(count==0){
+            he= *heit;
+            horizonOrdered.push_back(*heit);
+            count++;
+        }
+        horizonOrdered.push_back(hm[he->getToVertex()]);
+        he= hm[he->getToVertex()];
+    }
+
+    horizonOrdered.pop_back();
+    /*
+    std::vector<Dcel::HalfEdge*> horizVertex=std::vector<Dcel::HalfEdge*>(horizonOrdered.size());
+
+    int i=0;
+    for(std::list<Dcel::HalfEdge*>::iterator heit= horizonOrdered.begin(); heit!= horizonOrdered.end() ; ++heit,i++){
+        cout<<"Vertice "<<(*heit)->getId()<<endl;
+    }
+    */
+
+
+    return horizonOrdered;
 }
 
 /**
@@ -271,28 +306,28 @@ void ConvexHullCore::findConvexHull(){
 
     //Ciclo principlae sei punti, dal punto 4 fino alla fine
     for(unsigned int point_i=4; point_i < vertexS.size(); point_i++){
-        Dcel::Vertex* currentVertex=vertexS[point_i];
-        cout<<"Current vertex->"<<currentVertex->getId()<<endl;
+        Dcel::Vertex* currentPoint=vertexS[point_i];
+        cout<<"Current vertex->"<<currentPoint->getId()<<endl;
 
-        std::set<Dcel::Face*>* facesVisibleByVertex=conflictGraph.getFacesVisibleByVertex(currentVertex);
-        std::set<Dcel::HalfEdge*> horizon;
+        std::set<Dcel::Face*>* facesVisibleByVertex=conflictGraph.getFacesVisibleByVertex(currentPoint);
+        std::list<Dcel::HalfEdge*> horizon;
 
 
         //Se il punto corrente non è all'interno del convex hull, allora bisogna aggiornare il convexhull
         if(facesVisibleByVertex->size()>0){
 
             //Inserimento punto nella dcel
-            Dcel::Vertex* currentPoint = dcel->addVertex(vertexS[point_i]->getCoordinate());
+            Dcel::Vertex* currentVertex = dcel->addVertex(vertexS[point_i]->getCoordinate());
+            currentVertex -> setCardinality(0);
 
             //Ricerca Orizzonte
-            horizon = getHorizon(facesVisibleByVertex, currentPoint);
+            horizon = getHorizon(facesVisibleByVertex);
 
             //Cancellazione Facce Visibili dal punto
 
 
-            //newVertex->setCardinality(0);
             cout<<"Aggiunto vertice alla DCEL "<<endl;
-            //dcel->deleteVertex(newVertex);
+            //dcel->deleteVertex(currentVertex);
         }
 
         //conflictGraph.deleteVertexFromFace(currentVertex);
