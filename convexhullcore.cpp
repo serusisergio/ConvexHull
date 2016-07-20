@@ -115,6 +115,8 @@ void ConvexHullCore::setTetrahedron(){
         heInTriangle[i]->setPrev(heInTriangle[ (i+2)%3 ]);
         heInTriangle[i]->setFace(f1);
         vertexInitial[i]->setIncidentHalfEdge(heInTriangle[ (i+2)%3 ]);
+        vertexInitial[ i ]->incrementCardinality();
+        vertexInitial[ (i+1)%3 ]->incrementCardinality();
     }
     f1->setOuterHalfEdge(heInTriangle[0]);
 
@@ -138,6 +140,9 @@ void ConvexHullCore::setTetrahedron(){
         heInTetrahedron[k]->setFace(face);
         heInTetrahedron[k]->setTwin(heInTetrahedron[ (k+8)%9 ]);
         v4->setIncidentHalfEdge(heInTetrahedron[k]);
+        vertexInitial[ i ]->incrementCardinality();
+        v4->incrementCardinality();
+
 
         face->setOuterHalfEdge(heInTetrahedron[k]);
 
@@ -148,6 +153,8 @@ void ConvexHullCore::setTetrahedron(){
         heInTetrahedron[k]->setPrev(heInTetrahedron[ (k-1) ]);
         heInTetrahedron[k]->setFace(face);
         heInTetrahedron[k]->setTwin(heInTetrahedron[ (k+2)%8 ]);
+        vertexInitial[ (i+1)%3 ]->incrementCardinality();
+        v4->incrementCardinality();
 
         k++;
         heInTetrahedron[k]->setFromVertex(vertexInitial[ (i+1)%3 ]);
@@ -157,6 +164,8 @@ void ConvexHullCore::setTetrahedron(){
         heInTetrahedron[k]->setFace(face);
         heInTetrahedron[k]->setTwin(heInTriangle[i]);
         heInTriangle[i]->setTwin(heInTetrahedron[k]);
+        vertexInitial[ (i+1)%3 ]->incrementCardinality();
+        vertexInitial[ i ]->incrementCardinality();
 
         k++;
     }
@@ -168,26 +177,29 @@ void ConvexHullCore::setTetrahedron(){
  * This method is executed to find the horizon by a faces visible by a vertex
  * This method, return a pointer of the horizon list
  */
-std::set<Dcel::HalfEdge*>* ConvexHullCore::getHorizon(std::set<Dcel::Face *> *facesVisibleByVertex, Dcel::Vertex *currentVertex){
+std::set<Dcel::HalfEdge*> ConvexHullCore::getHorizon(std::set<Dcel::Face *> *facesVisibleByVertex, Dcel::Vertex *currentVertex){
     std::set<Dcel::HalfEdge*> horizon;
 
     
     for(std::set<Dcel::Face*>::iterator fit = facesVisibleByVertex->begin(); fit != facesVisibleByVertex->end(); ++fit){
         Dcel::Face* currentFace = *fit;
-
+        cout<<"FAccia ->"<<currentFace->getId();
         Dcel::HalfEdge* outerHE= currentFace->getOuterHalfEdge();
         
-        for(int i=0;i<2;i++){
+        for(int i=0;i<3;i++){
             Dcel::Face* faceTwin=outerHE->getTwin()->getFace();
 
             if(facesVisibleByVertex->count(faceTwin) == 0){
                 horizon.insert(outerHE);
+                cout<<"Inserimento HE nell'orizzonte ->"<<outerHE->getId()<<endl;
             }
 
             outerHE = outerHE->getNext();
         }
 
     }
+
+    return horizon;
 }
 
 /**
@@ -219,7 +231,7 @@ void ConvexHullCore::findConvexHull(){
         cout<<"Current vertex->"<<currentVertex->getId()<<endl;
 
         std::set<Dcel::Face*>* facesVisibleByVertex=conflictGraph.getFacesVisibleByVertex(currentVertex);
-        std::set<Dcel::HalfEdge*> orizzonte;
+        std::set<Dcel::HalfEdge*> horizon;
 
 
         //Se il punto corrente non è all'interno del convex hull, allora bisogna aggiornare il convexhull
@@ -228,13 +240,16 @@ void ConvexHullCore::findConvexHull(){
             //Inserimento punto nella dcel
             Dcel::Vertex* currentPoint = dcel->addVertex(vertexS[point_i]->getCoordinate());
 
+            //Ricerca Orizzonte
+            horizon = getHorizon(facesVisibleByVertex, currentPoint);
+
             //newVertex->setCardinality(0);
             cout<<"Aggiunto vertice alla DCEL "<<endl;
             //dcel->deleteVertex(newVertex);
         }
 
-        conflictGraph.deleteVertexFromFace(currentVertex);
-        conflictGraph.deleteFaceFromVertex(facesVisibleByVertex);
+        //conflictGraph.deleteVertexFromFace(currentVertex);
+        //conflictGraph.deleteFaceFromVertex(facesVisibleByVertex);
     }
 
 
