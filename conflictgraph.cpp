@@ -189,15 +189,15 @@ void ConflictGraph::deleteVertexFromFace(Dcel::Vertex* vertex){
 }
 
 void ConflictGraph::deleteFaceAndVertex(std::set<Dcel::Face *>* faces, Dcel::Vertex* vertex){
-
     /*
+
     //Se la lista delle facce visibili da vertex non è vuota allora cancellale
     if(faces->size()>0){
         for(auto i : *faces){
             std::list<Dcel::Vertex *>* vertexs = f_conflict[i];
             for(auto j : *vertexs){
                 std::list<Dcel::Face *>* face =v_conflict[j];
-                //face->erase(i);
+                face->erase(i);
             }
             cout<<"Faccia "<<i->getId()<<endl;
 
@@ -206,8 +206,8 @@ void ConflictGraph::deleteFaceAndVertex(std::set<Dcel::Face *>* faces, Dcel::Ver
     cout<<"____"<<endl;
     //Elimina il vertice
     v_conflict.erase(vertex);
-    */
 
+*/
 }
 
 
