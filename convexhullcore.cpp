@@ -223,7 +223,6 @@ std::list<Dcel::HalfEdge*> ConvexHullCore::getHorizon(std::set<Dcel::Face *> *fa
             count++;
         }
         horizonOrdered.push_back(hm[he->getToVertex()]);
-        cout<<"lo mette dentro "<<endl;
         he= hm[he->getToVertex()];
     }
 
@@ -233,20 +232,26 @@ std::list<Dcel::HalfEdge*> ConvexHullCore::getHorizon(std::set<Dcel::Face *> *fa
     int i=0;
     for(std::list<Dcel::HalfEdge*>::iterator heit= horizonOrdered.begin(); heit!= horizonOrdered.end() ; ++heit,i++){
         cout<<"Vertice "<<(*heit)->getId()<<endl;
+        dcel->addDebugCylinder((*heit)->getFromVertex()->getCoordinate(), (*heit)->getToVertex()->getCoordinate(), 0.005, QColor(255,0,0));
+
+
     }
 
     return horizonOrdered;
+
+
 }
 
 /**
  * @brief ConvexHullCore::removeFacesVisibleByVertex(std::set<Dcel::Face *> *facesVisibleByVertex)
  * This method is executed to remove the face that the current point see
  */
-void ConvexHullCore::removeFacesVisibleByVertex(std::set<Dcel::Face *> *facesVisibleByVertex){
+void ConvexHullCore::removeFacesVisibleByVertex(std::set<Dcel::Face *> facesVisibleByVertex){
+
     std::list<Dcel::Vertex*> vertexsToRemove;
 
 
-    for(std::set<Dcel::Face*>::iterator fit = facesVisibleByVertex->begin(); fit != facesVisibleByVertex->end(); ++fit){
+    for(std::set<Dcel::Face*>::iterator fit = facesVisibleByVertex.begin(); fit != facesVisibleByVertex.end(); ++fit){
         Dcel::Face* currentFace = *fit;
         cout<<"Rimuovendo faccia FAccia ->"<<currentFace->getId();
         Dcel::HalfEdge* outerHE= currentFace->getOuterHalfEdge();
@@ -276,8 +281,10 @@ void ConvexHullCore::removeFacesVisibleByVertex(std::set<Dcel::Face *> *facesVis
     if(vertexsToRemove.size()>0){
         for(std::list<Dcel::Vertex*>::iterator heit= vertexsToRemove.begin(); heit!= vertexsToRemove.end() ; ++heit){
             dcel->deleteVertex(*heit);
+            cout<<"Rimozione vertice ->"<<(*heit)->getId()<<endl;
         }
     }
+
 }
 
 /**
@@ -310,7 +317,7 @@ void ConvexHullCore::createNewFaces(std::list<Dcel::HalfEdge *> horizon, Dcel::V
         halfEdge1 -> setNext(halfEdge2);
         halfEdge1 -> setPrev(halfEdge3);
         halfEdge1 -> setTwin(currentHalfEdgeHorizon);
-        currentHalfEdgeHorizon -> setTwin(halfEdge1);
+        currentHalfEdgeHorizon -> setTwin(halfEdge2);
         v1 -> setIncidentHalfEdge(halfEdge1);
         v1 -> incrementCardinality();
         v2 -> incrementCardinality();
@@ -399,18 +406,22 @@ void ConvexHullCore::findConvexHull(){
             dcel->addDebugSphere((currentPoint)->getCoordinate(), 0.01, QColor(255,100,0));
 
             //Cancellazione Facce Visibili dal punto
-            removeFacesVisibleByVertex(facesVisibleByVertex);
+            removeFacesVisibleByVertex(*facesVisibleByVertex);
 
             //Creazione nuove facce
-            createNewFaces(horizon,currentVertex);
+            //createNewFaces(horizon,currentVertex);
 
-            //dcel->deleteVertex(currentVertex);
+
+
         }
-        if(count==0){
-            break;
+        count++;
+        if(count ==1){
+           break;
         }
-        //conflictGraph.deleteVertexFromFace(currentVertex);
-        //conflictGraph.deleteFaceFromVertex(facesVisibleByVertex);
+
+
+        conflictGraph.deleteVertexFromFace(currentPoint);
+        conflictGraph.deleteFaceFromVertex(facesVisibleByVertex);
     }
 
 

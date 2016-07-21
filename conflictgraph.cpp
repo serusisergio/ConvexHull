@@ -40,7 +40,7 @@ void ConflictGraph::initializeCG(){
             matrix(3,2) = p.z();
             matrix(3,3) = 1;
 
-            if(matrix.determinant() < -std::numeric_limits<double>::epsilon()){//nella
+            if(matrix.determinant() <- std::numeric_limits<double>::epsilon()){//nella
                 addFaceToVertex( face, vertexS[point]);
                 addVertexToFace( vertexS[point], face);
             }
@@ -100,7 +100,7 @@ bool ConflictGraph::isVisible(Dcel::Vertex *vertex, Dcel::Face *face){
     matrix(3,2) = p.z();
     matrix(3,3) = 1;
 
-    return (matrix.determinant() < -std::numeric_limits<double>::epsilon());
+    return ((matrix.determinant()) < -std::numeric_limits<double>::epsilon());
 }
 
 
