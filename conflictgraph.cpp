@@ -24,13 +24,18 @@ void ConflictGraph::initializeCG(){
         Dcel::Face* face= *fit;
 
         int k=0;
-        for(Dcel::Face::IncidentVertexIterator vit = face->incidentVertexBegin(); vit != face->incidentVertexEnd(); ++vit,k++){
-            Dcel::Vertex* vertex=*vit;
+        Dcel::HalfEdge* halfEdge = face->getOuterHalfEdge();
+
+
+
+        for(int i=0;i<3;i++,k++){
+            Dcel::Vertex* vertex = halfEdge->getFromVertex();
             Pointd p= vertex->getCoordinate();
             matrix(k,0) = p.x();
             matrix(k,1) = p.y();
             matrix(k,2) = p.z();
             matrix(k,3) = 1;
+            halfEdge = halfEdge->getNext();
         }
 
         for(int point=4; point<numberVertex; point++){

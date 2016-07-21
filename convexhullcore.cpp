@@ -119,7 +119,7 @@ void ConvexHullCore::setTetrahedron(){
         heInTriangle[i]->setNext(heInTriangle[ (i+1)%3 ]);
         heInTriangle[i]->setPrev(heInTriangle[ (i+2)%3 ]);
         heInTriangle[i]->setFace(f1);
-        vertexInitial[i]->setIncidentHalfEdge(heInTriangle[ (i+2)%3 ]);
+        vertexInitial[i]->setIncidentHalfEdge(heInTriangle[ i ]);
         vertexInitial[ i ]->incrementCardinality();
         vertexInitial[ (i+1)%3 ]->incrementCardinality();
     }
