@@ -46,7 +46,6 @@ private:
     void removeFacesVisibleByVertex(std::set<Dcel::Face*> facesVisibleByVertex);
     void createNewFaces(std::list<Dcel::HalfEdge*> horizon, Dcel::Vertex*);
 
-
     //variable
     DrawableDcel* dcel;
     int numberVertex=0;

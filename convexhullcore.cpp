@@ -89,88 +89,53 @@ void ConvexHullCore::executePermutation(){
  * the execution of setTetrahedron() the dcel contain the convex hull of the 4 initial points
  */
 void ConvexHullCore::setTetrahedron(){
-    //CREAZIONE TETRAEDRO
 
-    //CREAZIONE TRIANGOLO
-    std::vector<Dcel::Vertex*> vertexInitial  = std::vector<Dcel::Vertex*>(3);  //conterrà i vertici per formare la base
-    std::vector<Dcel::HalfEdge*> heInTriangle = std::vector<Dcel::HalfEdge*>(3);//conterrà gli halfedge per formare la base
+    std::list<Dcel::HalfEdge *> horizon;
 
-    //HalfEdge del Tetraedro
-    std::vector<Dcel::HalfEdge*> heInTetrahedron = std::vector<Dcel::HalfEdge*>(9);//conterrà gli halfedge per completare il tetraedro
+    Dcel::Vertex* v3 = this->dcel->addVertex(this->vertexS[0]->getCoordinate());
+    Dcel::Vertex* v2 = this->dcel->addVertex(this->vertexS[1]->getCoordinate());
+    Dcel::Vertex* v1 = this->dcel->addVertex(this->vertexS[2]->getCoordinate());
+    Dcel::Vertex* v4 = this->dcel->addVertex(this->vertexS[3]->getCoordinate());
 
-    //Creazione vertici della Base
-    for(unsigned int i=0;i<3;i++){
-        vertexInitial[i] = this->dcel->addVertex(this->vertexS[i]->getCoordinate());
-        heInTriangle[i]  = this->dcel->addHalfEdge();
-    }
+    Dcel::HalfEdge* halfEdge1 = this->dcel->addHalfEdge();
+    Dcel::HalfEdge* halfEdge2 = this->dcel->addHalfEdge();
+    Dcel::HalfEdge* halfEdge3 = this->dcel->addHalfEdge();
 
-    //AggiuntaHalfEdgeTetraedro
-    for(unsigned int i=0;i<9;i++){
-        heInTetrahedron[i]= this->dcel->addHalfEdge();
-    }
+    Dcel::Face* f1 = dcel->addFace();
 
-    //Creazione faccia della base
-    Dcel::Face* f1= this->dcel->addFace();
+    f1->setOuterHalfEdge(halfEdge1);
+    halfEdge1 -> setFromVertex(v1);
+    halfEdge1 -> setToVertex(v2);
+    halfEdge1 -> setFace(f1);
+    halfEdge1 -> setNext(halfEdge2);
+    halfEdge1 -> setPrev(halfEdge3);
+    v1 -> setIncidentHalfEdge(halfEdge1);
+    v1 -> incrementCardinality();
+    v2 -> incrementCardinality();
 
-    //Ciclo per impostare i next,prev,from,to e face della Base
-    for(unsigned int i=0;i<3;i++){//uso il modulo per completare il ciclo
-        heInTriangle[i]->setFromVertex(vertexInitial[ i ]);
-        heInTriangle[i]->setToVertex(vertexInitial[ (i+1)%3 ]);
-        heInTriangle[i]->setNext(heInTriangle[ (i+1)%3 ]);
-        heInTriangle[i]->setPrev(heInTriangle[ (i+2)%3 ]);
-        heInTriangle[i]->setFace(f1);
-        vertexInitial[i]->setIncidentHalfEdge(heInTriangle[ i ]);
-        vertexInitial[ i ]->incrementCardinality();
-        vertexInitial[ (i+1)%3 ]->incrementCardinality();
-    }
-    f1->setOuterHalfEdge(heInTriangle[0]);
+    halfEdge2 -> setFromVertex(v2);
+    halfEdge2 -> setToVertex(v3);
+    halfEdge2 -> setFace(f1);
+    halfEdge2 -> setNext(halfEdge3);
+    halfEdge2 -> setPrev(halfEdge1);
+    v2 -> setIncidentHalfEdge(halfEdge2);
+    v2 -> incrementCardinality();
+    v3 -> incrementCardinality();
 
-    //Aggiunta quarto vertice
-    Dcel::Vertex* v4 =this->dcel->addVertex(this->vertexS[3]->getCoordinate());
+    halfEdge3 -> setFromVertex(v3);
+    halfEdge3 -> setToVertex(v1);
+    halfEdge3 -> setFace(f1);
+    halfEdge3 -> setNext(halfEdge1);
+    halfEdge3 -> setPrev(halfEdge2);
+    v3 -> setIncidentHalfEdge(halfEdge3);
+    v3 -> incrementCardinality();
+    v1 -> incrementCardinality();
 
+    horizon.push_back(halfEdge1);
+    horizon.push_back(halfEdge2);
+    horizon.push_back(halfEdge3);
 
-
-    //Settaggio half edge tetraedro
-    int k=0;//usata per gli half edge del tetraedro
-    for(unsigned int i=0;i<3;i++){//ad ogni ciclo creo una faccia F ed imposto i 3 half edge della faccia corrente (F)
-        Dcel::Face* face= this->dcel->addFace();
-
-        heInTetrahedron[k]->setFromVertex(vertexInitial[ i ]);
-        heInTetrahedron[k]->setToVertex(v4);
-        heInTetrahedron[k]->setNext(heInTetrahedron[ (k+1) ]);
-        heInTetrahedron[k]->setPrev(heInTetrahedron[ (k+2) ]);
-        heInTetrahedron[k]->setFace(face);
-        heInTetrahedron[k]->setTwin(heInTetrahedron[ (k+7)%9 ]);
-        v4->setIncidentHalfEdge(heInTetrahedron[k]);
-        vertexInitial[ i ]->incrementCardinality();
-        v4->incrementCardinality();
-
-
-        face->setOuterHalfEdge(heInTetrahedron[k]);
-
-        k++;
-        heInTetrahedron[k]->setFromVertex(v4);
-        heInTetrahedron[k]->setToVertex(vertexInitial[ (i+1)%3 ]);
-        heInTetrahedron[k]->setNext(heInTetrahedron[ (k+1) ]);
-        heInTetrahedron[k]->setPrev(heInTetrahedron[ (k-1) ]);
-        heInTetrahedron[k]->setFace(face);
-        heInTetrahedron[k]->setTwin(heInTetrahedron[ (k+2)%9 ]);
-        vertexInitial[ (i+1)%3 ]->incrementCardinality();
-        v4->incrementCardinality();
-
-        k++;
-        heInTetrahedron[k]->setFromVertex(vertexInitial[ (i+1)%3 ]);
-        heInTetrahedron[k]->setToVertex(vertexInitial[ i ]);
-        heInTetrahedron[k]->setNext(heInTetrahedron[ (k-2) ]);
-        heInTetrahedron[k]->setPrev(heInTetrahedron[ (k-1) ]);
-        heInTetrahedron[k]->setFace(face);
-        heInTetrahedron[k]->setTwin(heInTriangle[i]);
-        heInTriangle[i]->setTwin(heInTetrahedron[k]);
-        vertexInitial[ (i+1)%3 ]->incrementCardinality();
-        vertexInitial[ i ]->incrementCardinality();
-
-        k++;
-    }
+    createNewFaces(horizon, v4);
 
 }
 
@@ -247,7 +212,6 @@ std::list<Dcel::HalfEdge*> ConvexHullCore::getHorizon(std::set<Dcel::Face *> *fa
  * This method is executed to remove the face that the current point see
  */
 void ConvexHullCore::removeFacesVisibleByVertex(std::set<Dcel::Face *> facesVisibleByVertex){
-
     std::list<Dcel::Vertex*> vertexsToRemove;
 
 
@@ -317,7 +281,7 @@ void ConvexHullCore::createNewFaces(std::list<Dcel::HalfEdge *> horizon, Dcel::V
         halfEdge1 -> setNext(halfEdge2);
         halfEdge1 -> setPrev(halfEdge3);
         halfEdge1 -> setTwin(currentHalfEdgeHorizon);
-        currentHalfEdgeHorizon -> setTwin(halfEdge2);
+        currentHalfEdgeHorizon -> setTwin(halfEdge1);
         v1 -> setIncidentHalfEdge(halfEdge1);
         v1 -> incrementCardinality();
         v2 -> incrementCardinality();
@@ -344,16 +308,21 @@ void ConvexHullCore::createNewFaces(std::list<Dcel::HalfEdge *> horizon, Dcel::V
 
         heEnter[i] = halfEdge3;
         i++;
-        dcel->addDebugCylinder(currentHalfEdgeHorizon->getFromVertex()->getCoordinate(), currentHalfEdgeHorizon->getToVertex()->getCoordinate(), 0.005, QColor(255,0,0));
+        dcel->addDebugCylinder(currentHalfEdgeHorizon->getFromVertex()->getCoordinate(), currentHalfEdgeHorizon->getToVertex()->getCoordinate(), 0.01, QColor(255,0,0));
 
     }
+
+
+
 
     //Settaggio twin half edge
-    int dim=(heEnter.size())-1;
-    for(int i=0; i <= dim ; i++){
-        heEnter[(i+1)%dim] -> setTwin(heExit[i]);
-        heExit[i] -> setTwin(heEnter[(i+1)%dim]);
+    int dim=(heEnter.size());
+    for(int i=0; i < dim ; i++){
+
+        heEnter[(i+(dim-1))%dim] -> setTwin(heExit[i]);
+        heExit[i] -> setTwin(heEnter[(i+(dim-1))%dim]);
     }
+
 }
 
 /**
@@ -368,7 +337,7 @@ void ConvexHullCore::findConvexHull(){
 
     //Calcola una permutazione random degli n punti
     executePermutation();
-    
+
     //Pulizia della dcel, che conterrà il convex hull alla fine dell'algoritmo
     this->dcel->reset();
 
@@ -397,7 +366,6 @@ void ConvexHullCore::findConvexHull(){
 
             //Inserimento punto nella dcel
             Dcel::Vertex* currentVertex = dcel->addVertex(vertexS[point_i]->getCoordinate());
-            currentVertex -> setCardinality(0);
             cout<<"Aggiunto vertice alla DCEL "<<endl;
 
 
@@ -406,10 +374,15 @@ void ConvexHullCore::findConvexHull(){
             dcel->addDebugSphere((currentPoint)->getCoordinate(), 0.01, QColor(255,100,0));
 
             //Cancellazione Facce Visibili dal punto
-            removeFacesVisibleByVertex(*facesVisibleByVertex);
+            //removeFacesVisibleByVertex(*facesVisibleByVertex);
+            //conflictGraph.deleteFaceFromVertex(facesVisibleByVertex);
+
 
             //Creazione nuove facce
             //createNewFaces(horizon,currentVertex);
+
+            //aggiornamento cg
+            //conflictGraph.rinitializeCG(point_i+1);
 
 
 
@@ -421,7 +394,6 @@ void ConvexHullCore::findConvexHull(){
 
 
         conflictGraph.deleteVertexFromFace(currentPoint);
-        conflictGraph.deleteFaceFromVertex(facesVisibleByVertex);
     }
 
 

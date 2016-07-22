@@ -185,11 +185,11 @@ void ConflictGraph::deleteVertexFromFace(Dcel::Vertex* vertex){
     
     v_conflict.erase(vertex);
 
-     for(std::map<Dcel::Face*, std::set<Dcel::Vertex*>*>::iterator fit = f_conflict.begin(); fit != f_conflict.end(); ++fit){
+    for(std::map<Dcel::Face*, std::set<Dcel::Vertex*>*>::iterator fit = f_conflict.begin(); fit != f_conflict.end(); ++fit){
          if(fit->second != nullptr){
              fit->second->erase(vertex);
          }
- }
+    }
     
 }
 
@@ -239,5 +239,55 @@ std::set<Dcel::Vertex *>* ConflictGraph::getVertexVisibleByFace(Dcel::Face *face
         return f_conflict.at(face);
     }else{
         return new std::set<Dcel::Vertex *>();
+    }
+}
+
+void ConflictGraph::rinitializeCG(int i)
+{
+    Matrix<double,4,4> matrix;
+
+    for (Dcel::FaceIterator fit = dcel->faceBegin(); fit != dcel->faceEnd(); ++fit){
+        Dcel::Face* face= *fit;
+
+        int k=0;
+        Dcel::HalfEdge* halfEdge = face->getOuterHalfEdge();
+
+
+
+        for(int i=0;i<3;i++,k++){
+            Dcel::Vertex* vertex = halfEdge->getFromVertex();
+            Pointd p= vertex->getCoordinate();
+            matrix(k,0) = p.x();
+            matrix(k,1) = p.y();
+            matrix(k,2) = p.z();
+            matrix(k,3) = 1;
+            halfEdge = halfEdge->getNext();
+        }
+
+        for(int point=i; point<numberVertex; point++){
+            Pointd p=vertexS[point]->getCoordinate();
+            matrix(3,0) = p.x();
+            matrix(3,1) = p.y();
+            matrix(3,2) = p.z();
+            matrix(3,3) = 1;
+
+            if(matrix.determinant() <- std::numeric_limits<double>::epsilon()){//nella
+                addFaceToVertex( face, vertexS[point]);
+                addVertexToFace( vertexS[point], face);
+            }
+        }
+
+
+        /*
+        std::list<Dcel::Vertex*>* stampa= f_conflict[face];
+        std::list<Dcel::Vertex*>::iterator p;
+        int z=0;
+
+
+        for (p = stampa->begin(); p != stampa->end(); p++){
+                cout << "Elemento " << z++ << ": " << *p <<" della lista della faccia "<<face->getId()<< endl;
+        }
+        */
+
     }
 }

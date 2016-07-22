@@ -18,6 +18,8 @@ public:
     std::set<Dcel::Face*>* getFacesVisibleByVertex(Dcel::Vertex* vertex);
     std::set<Dcel::Vertex*>* getVertexVisibleByFace(Dcel::Face* face);
 
+    void rinitializeCG(int i);
+
 
     //Oggetti-Variabili passati da convexhull core
     DrawableDcel* dcel;
