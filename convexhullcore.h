@@ -43,8 +43,9 @@ private:
     bool isCoplanar();
     void setTetrahedron();
     std::list<Dcel::HalfEdge*> getHorizon(std::set<Dcel::Face*>* facesVisibleByVertex);
-    void removeFacesVisibleByVertex(std::set<Dcel::Face*> facesVisibleByVertex);
+    void removeFacesVisibleByVertex(std::set<Dcel::Face*>* facesVisibleByVertex);
     void createNewFaces(std::list<Dcel::HalfEdge*> horizon, Dcel::Vertex*);
+    bool isNormalFaceTurnedTowardsThePoint();
 
     //variable
     DrawableDcel* dcel;

@@ -50,10 +50,10 @@ void ConvexHullCore::getVertexs(){
  */
 bool ConvexHullCore::isCoplanar(){
 
-    Pointd p0= vertexS[0]->getCoordinate();
-    Pointd p1= vertexS[1]->getCoordinate();
-    Pointd p2= vertexS[2]->getCoordinate();
-    Pointd p3= vertexS[3]->getCoordinate();
+    Pointd p0= vertexS[0] -> getCoordinate();
+    Pointd p1= vertexS[1] -> getCoordinate();
+    Pointd p2= vertexS[2] -> getCoordinate();
+    Pointd p3= vertexS[3] -> getCoordinate();
 
     Matrix<double,4,4> matrix;
     matrix<< p0.x(), p0.y(), p0.z(), 1,
@@ -90,19 +90,32 @@ void ConvexHullCore::executePermutation(){
  */
 void ConvexHullCore::setTetrahedron(){
 
-    std::list<Dcel::HalfEdge *> horizon;
+    std::list<Dcel::HalfEdge *> horizon;//Conterrà gli half edge del triangolo che verranno usati per costruire il tetraedro
 
-    Dcel::Vertex* v3 = this->dcel->addVertex(this->vertexS[0]->getCoordinate());
+    //Aggiunta dei vertici nella dcel
+    Dcel::Vertex* v1;
     Dcel::Vertex* v2 = this->dcel->addVertex(this->vertexS[1]->getCoordinate());
-    Dcel::Vertex* v1 = this->dcel->addVertex(this->vertexS[2]->getCoordinate());
+    Dcel::Vertex* v3;
     Dcel::Vertex* v4 = this->dcel->addVertex(this->vertexS[3]->getCoordinate());
 
+    //Se la faccia del trinagolo, ha la normale rivolta verso il punto, allora faccio uno switch, in modo da garantire il senso antiorario degli he
+    if(isNormalFaceTurnedTowardsThePoint()){
+        v3 = this->dcel->addVertex(this->vertexS[0]->getCoordinate());
+        v1 = this->dcel->addVertex(this->vertexS[2]->getCoordinate());
+    }else{
+        v1 = this->dcel->addVertex(this->vertexS[0]->getCoordinate());
+        v3 = this->dcel->addVertex(this->vertexS[2]->getCoordinate());
+    }
+
+    //Creo gli half edge del triangolo
     Dcel::HalfEdge* halfEdge1 = this->dcel->addHalfEdge();
     Dcel::HalfEdge* halfEdge2 = this->dcel->addHalfEdge();
     Dcel::HalfEdge* halfEdge3 = this->dcel->addHalfEdge();
 
+    //Creao la faccia del trinagolo e la aggiungo alla dcel
     Dcel::Face* f1 = dcel->addFace();
 
+    //SETTAGGIO HALF EDGE DEL TRINAGOLO, SETTAGGIO VERTICI ECC
     f1->setOuterHalfEdge(halfEdge1);
     halfEdge1 -> setFromVertex(v1);
     halfEdge1 -> setToVertex(v2);
@@ -131,10 +144,12 @@ void ConvexHullCore::setTetrahedron(){
     v3 -> incrementCardinality();
     v1 -> incrementCardinality();
 
+    //Inserimento degli half edge nella lista horizon, su cui costruire le altre facce
     horizon.push_back(halfEdge1);
     horizon.push_back(halfEdge2);
     horizon.push_back(halfEdge3);
 
+    //Creazione delle altre tre facce che formano il tetraedro
     createNewFaces(horizon, v4);
 
 }
@@ -142,43 +157,44 @@ void ConvexHullCore::setTetrahedron(){
 /**
  * @brief ConvexHullCore::getHorizon()
  * This method is executed to find the horizon by a faces visible by a vertex
- * This method, return a pointer of the horizon list
+ * This method, return a horizon list
  */
 std::list<Dcel::HalfEdge*> ConvexHullCore::getHorizon(std::set<Dcel::Face *> *facesVisibleByVertex){
     std::set<Dcel::HalfEdge*> horizonUnordered;
     std::list<Dcel::HalfEdge*> horizonOrdered;
     std::map<Dcel::Vertex*, Dcel::HalfEdge*> hm;
 
-
+    //Scorro le facce visibili dal punto
     for(std::set<Dcel::Face*>::iterator fit = facesVisibleByVertex->begin(); fit != facesVisibleByVertex->end(); ++fit){
         Dcel::Face* currentFace = *fit;
         cout<<"Faccia ->"<<currentFace->getId()<<endl;
 
-        Dcel::HalfEdge* outerHE = currentFace->getOuterHalfEdge();
-        Dcel::HalfEdge* twin    = outerHE->getTwin();
+        Dcel::HalfEdge* outerHE = currentFace -> getOuterHalfEdge();
+        Dcel::HalfEdge* twin    = outerHE     -> getTwin();
 
         //Per ogni faccia scorro gli half edge della faccia
         for(int i=0;i<3;i++){
-            Dcel::Face* faceTwin = twin->getFace();
+            Dcel::Face* faceTwin = twin -> getFace();
 
-            if(facesVisibleByVertex->count(faceTwin) == 0){//se il twin dell'HE sta in una faccia non visibile, allora HE è proprio nell'orizzonte
+            //se il twin dell'HE sta in una faccia non visibile, allora HE è proprio nell'orizzonte
+            if(facesVisibleByVertex->count(faceTwin) == 0){
                 horizonUnordered.insert(twin);
                 cout<<"Inserimento HE nell'orizzonte ->"<<twin->getId()<<endl;
             }
 
-            outerHE = outerHE->getNext();
-            twin    = outerHE->getTwin();
+            outerHE = outerHE -> getNext();
+            twin    = outerHE -> getTwin();
         }
 
     }
 
-    //Oridno la lista degli HE dell'orizzonte
+    //Carico la mappa che userò per ordinare gli HE dell'orizzonte
     for(std::set<Dcel::HalfEdge*>::iterator heit= horizonUnordered.begin(); heit!= horizonUnordered.end() ; ++heit){
         Dcel::HalfEdge* he= *heit;
         hm[he->getFromVertex()]=he;
     }
 
-
+    //Ordino gli HE dell'orizzonte
     int count=0;
     for(std::set<Dcel::HalfEdge*>::iterator heit= horizonUnordered.begin(); heit!= horizonUnordered.end() ; ++heit){
         Dcel::HalfEdge* he;//il precedente
@@ -190,20 +206,17 @@ std::list<Dcel::HalfEdge*> ConvexHullCore::getHorizon(std::set<Dcel::Face *> *fa
         horizonOrdered.push_back(hm[he->getToVertex()]);
         he= hm[he->getToVertex()];
     }
-
+    //Elimino il doppione
     horizonOrdered.pop_back();
 
     std::vector<Dcel::HalfEdge*> horizVertex=std::vector<Dcel::HalfEdge*>(horizonOrdered.size());
     int i=0;
     for(std::list<Dcel::HalfEdge*>::iterator heit= horizonOrdered.begin(); heit!= horizonOrdered.end() ; ++heit,i++){
-        cout<<"Vertice "<<(*heit)->getId()<<endl;
+        cout<<"HalfEdfe Orizzonte->  "<<(*heit)->getId()<<endl;
         dcel->addDebugCylinder((*heit)->getFromVertex()->getCoordinate(), (*heit)->getToVertex()->getCoordinate(), 0.005, QColor(255,0,0));
-
-
     }
 
     return horizonOrdered;
-
 
 }
 
@@ -211,25 +224,33 @@ std::list<Dcel::HalfEdge*> ConvexHullCore::getHorizon(std::set<Dcel::Face *> *fa
  * @brief ConvexHullCore::removeFacesVisibleByVertex(std::set<Dcel::Face *> *facesVisibleByVertex)
  * This method is executed to remove the face that the current point see
  */
-void ConvexHullCore::removeFacesVisibleByVertex(std::set<Dcel::Face *> facesVisibleByVertex){
+void ConvexHullCore::removeFacesVisibleByVertex(std::set<Dcel::Face *>* facesVisibleByVertex){
+    //Conterra i vertici da rimuovere
     std::list<Dcel::Vertex*> vertexsToRemove;
 
-
-    for(std::set<Dcel::Face*>::iterator fit = facesVisibleByVertex.begin(); fit != facesVisibleByVertex.end(); ++fit){
+    //Scorro le facce visibili dal punto per eliminarle ed eliminare gli HE delle stesse
+    for(std::set<Dcel::Face*>::iterator fit = facesVisibleByVertex->begin(); fit != facesVisibleByVertex->end(); ++fit){
         Dcel::Face* currentFace = *fit;
-        cout<<"Rimuovendo faccia FAccia ->"<<currentFace->getId();
-        Dcel::HalfEdge* outerHE= currentFace->getOuterHalfEdge();
 
+        //Parto da un HE della faccia
+        Dcel::HalfEdge* outerHE= currentFace ->getOuterHalfEdge();
+
+        //E scorro tutta la faccia
         for(int i=0;i<3;i++){
             Dcel::Vertex* from = outerHE -> getFromVertex();
             Dcel::Vertex* to   = outerHE -> getToVertex();
 
+            //decremento la cardinalità dei vertici cui tratta l'hEdge corrente
             from -> decrementCardinality();
             to   -> decrementCardinality();
 
+            //elimino half edge
             dcel -> deleteHalfEdge(outerHE);
+            cout<<"Eliminazione He->"<<outerHE->getId()<<" -> della faccia ->"<<currentFace->getId()<<endl;
 
             outerHE = outerHE->getNext();
+
+            //Metto i vertici con cardinalità xero, stanno ad indicare che il vertice non è più utile alla dcel
             if(from -> getCardinality() == 0){
                 vertexsToRemove.push_back(from);
             }
@@ -237,11 +258,14 @@ void ConvexHullCore::removeFacesVisibleByVertex(std::set<Dcel::Face *> facesVisi
                 vertexsToRemove.push_back(to);
             }
         }
+
+        //Una volta eliminato il tutto riguardante la faccia, allora elimino la faccia
         this -> dcel -> deleteFace(currentFace);
         cout<<"Eliminazione faccia ->"<<currentFace->getId()<<endl;
 
     }
 
+    //Elimino i vertici non neccessario
     if(vertexsToRemove.size()>0){
         for(std::list<Dcel::Vertex*>::iterator heit= vertexsToRemove.begin(); heit!= vertexsToRemove.end() ; ++heit){
             dcel->deleteVertex(*heit);
@@ -312,15 +336,34 @@ void ConvexHullCore::createNewFaces(std::list<Dcel::HalfEdge *> horizon, Dcel::V
 
     }
 
-
-
-
     //Settaggio twin half edge
     int dim=(heEnter.size());
     for(int i=0; i < dim ; i++){
 
         heEnter[(i+(dim-1))%dim] -> setTwin(heExit[i]);
         heExit[i] -> setTwin(heEnter[(i+(dim-1))%dim]);
+    }
+
+}
+
+
+bool ConvexHullCore::isNormalFaceTurnedTowardsThePoint(){
+    Pointd p0= vertexS[0]->getCoordinate();
+    Pointd p1= vertexS[1]->getCoordinate();
+    Pointd p2= vertexS[2]->getCoordinate();
+    Pointd p3= vertexS[3]->getCoordinate();
+
+    Matrix<double,4,4> matrix;
+    matrix<< p0.x(), p0.y(), p0.z(), 1,
+             p1.x(), p1.y(), p1.z(), 1,
+             p2.x(), p2.y(), p2.z(), 1,
+             p3.x(), p3.y(), p3.z(), 1;
+
+    double det = matrix.determinant();
+    if(det > std::numeric_limits<double>::epsilon() ){
+        return false;
+    }else{
+        return true;
     }
 
 }
@@ -371,25 +414,25 @@ void ConvexHullCore::findConvexHull(){
 
             //Ricerca Orizzonte
             horizon = getHorizon(facesVisibleByVertex);
-            dcel->addDebugSphere((currentPoint)->getCoordinate(), 0.01, QColor(255,100,0));
+            dcel->addDebugSphere((currentPoint)->getCoordinate(), 0.05, QColor(255,100,0));
 
             //Cancellazione Facce Visibili dal punto
-            //removeFacesVisibleByVertex(*facesVisibleByVertex);
+            removeFacesVisibleByVertex(facesVisibleByVertex);
             //conflictGraph.deleteFaceFromVertex(facesVisibleByVertex);
 
 
             //Creazione nuove facce
-            //createNewFaces(horizon,currentVertex);
+            createNewFaces(horizon,currentVertex);
 
             //aggiornamento cg
-            //conflictGraph.rinitializeCG(point_i+1);
+            conflictGraph.rinitializeCG(point_i+1);
 
 
 
         }
         count++;
         if(count ==1){
-           break;
+            break;
         }
 
 
