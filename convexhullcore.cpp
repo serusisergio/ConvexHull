@@ -285,20 +285,25 @@ void ConvexHullCore::createNewFaces(std::list<Dcel::HalfEdge *> horizon, Dcel::V
 
     cout<<"Creazione nuove facce"<<endl;
     int i=0;
+    //Scorro hli half edge dell'orizzonte per creare le nuove facce, ad ogni ciclo creo una faccia
     for(std::list<Dcel::HalfEdge*>::iterator it = horizon.begin(); it != horizon.end(); ++it){
         Dcel::HalfEdge* currentHalfEdgeHorizon = *it;
         cout<<"HalfEdgeOrizzonte ->"<<currentHalfEdgeHorizon->getId() <<endl;
 
+        //Creo i nuovi tre half edge della faccia corrente che sto creando
         Dcel::HalfEdge* halfEdge1=dcel->addHalfEdge();
         Dcel::HalfEdge* halfEdge2=dcel->addHalfEdge();
         Dcel::HalfEdge* halfEdge3=dcel->addHalfEdge();
 
+        //Creao la faccia e setto l'outer
         Dcel::Face* currentFace = dcel->addFace();
         currentFace->setOuterHalfEdge(halfEdge1);
 
+        //Dai vertici che tratta l'half edge corrente gli uso per costruire
         Dcel::Vertex* v1 = currentHalfEdgeHorizon->getToVertex(); //attenzione all'ordine, deve essere in senso antiorario, regola mano destra
         Dcel::Vertex* v2 = currentHalfEdgeHorizon->getFromVertex();
 
+        //Setto tutti i paramentri degli half edge
         halfEdge1 -> setFromVertex(v1);
         halfEdge1 -> setToVertex(v2);
         halfEdge1 -> setFace(currentFace);
@@ -319,7 +324,7 @@ void ConvexHullCore::createNewFaces(std::list<Dcel::HalfEdge *> horizon, Dcel::V
         v2 -> incrementCardinality();
         v3 -> incrementCardinality();
 
-        heExit[i] = halfEdge2;
+        heExit[i] = halfEdge2; //Carico in un vettore gli halfedge uscenti dal vertice (che userò per settare i twin)
 
         halfEdge3 -> setFromVertex(v3);
         halfEdge3 -> setToVertex(v1);
@@ -330,13 +335,13 @@ void ConvexHullCore::createNewFaces(std::list<Dcel::HalfEdge *> horizon, Dcel::V
         v3 -> incrementCardinality();
         v1 -> incrementCardinality();
 
-        heEnter[i] = halfEdge3;
+        heEnter[i] = halfEdge3; //Carico in un vettore gli halfedge entranti del vertice (che usero per settare i twin)
         i++;
         dcel->addDebugCylinder(currentHalfEdgeHorizon->getFromVertex()->getCoordinate(), currentHalfEdgeHorizon->getToVertex()->getCoordinate(), 0.01, QColor(255,0,0));
 
     }
 
-    //Settaggio twin half edge
+    //Settaggio twin half edge, usando il modulo per garantire che il cerchio si chiuda
     int dim=(heEnter.size());
     for(int i=0; i < dim ; i++){
 
@@ -346,7 +351,11 @@ void ConvexHullCore::createNewFaces(std::list<Dcel::HalfEdge *> horizon, Dcel::V
 
 }
 
-
+/**
+ * @brief ConvexHullCore::isNormalFaceTurnedTowardsThePoint()
+ * This method is executed to verify if the normal of the face (the face created by the initial point, the first triangle) torned towards the fourth point
+ * @return True if the normal of the face turned towards the point
+ */
 bool ConvexHullCore::isNormalFaceTurnedTowardsThePoint(){
     Pointd p0= vertexS[0]->getCoordinate();
     Pointd p1= vertexS[1]->getCoordinate();
@@ -360,6 +369,7 @@ bool ConvexHullCore::isNormalFaceTurnedTowardsThePoint(){
              p3.x(), p3.y(), p3.z(), 1;
 
     double det = matrix.determinant();
+
     if(det > std::numeric_limits<double>::epsilon() ){
         return false;
     }else{

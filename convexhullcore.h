@@ -16,7 +16,6 @@
 #include <GUI/conflictgraph.h>
 #include <iostream>
 
-#include <iostream>
 #include <deque>
 #include <iterator>
 #include "boost/graph/adjacency_list.hpp"
