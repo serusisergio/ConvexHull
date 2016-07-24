@@ -279,9 +279,11 @@ void ConvexHullCore::removeFacesVisibleByVertex(std::set<Dcel::Face *>* facesVis
  * @brief ConvexHullCore::createNewFaces(std::list<Dcel::HalfEdge *> horizon, Dcel::Vertex *)
  * This method is executed to create the new faces using the horizon
  */
-void ConvexHullCore::createNewFaces(std::list<Dcel::HalfEdge *> horizon, Dcel::Vertex* v3){
-    std::vector<Dcel::HalfEdge*> heEnter = std::vector<Dcel::HalfEdge*>(horizon.size());
-    std::vector<Dcel::HalfEdge*> heExit  = std::vector<Dcel::HalfEdge*>(horizon.size());
+std::vector<Dcel::Face*> ConvexHullCore::createNewFaces(std::list<Dcel::HalfEdge *> horizon, Dcel::Vertex* v3){
+    std::vector<Dcel::HalfEdge*> heEnter  = std::vector<Dcel::HalfEdge*>(horizon.size());
+    std::vector<Dcel::HalfEdge*> heExit   = std::vector<Dcel::HalfEdge*>(horizon.size());
+    std::vector<Dcel::Face*>     newFaces = std::vector<Dcel::Face*    >(horizon.size());
+
 
     cout<<"Creazione nuove facce"<<endl;
     int i=0;
@@ -298,6 +300,8 @@ void ConvexHullCore::createNewFaces(std::list<Dcel::HalfEdge *> horizon, Dcel::V
         //Creao la faccia e setto l'outer
         Dcel::Face* currentFace = dcel->addFace();
         currentFace->setOuterHalfEdge(halfEdge1);
+        newFaces[i]=currentFace;
+        //cout<<"Creazione nuova faccia"<<currentFace->getId()<<endl;
 
         //Dai vertici che tratta l'half edge corrente gli uso per costruire
         Dcel::Vertex* v1 = currentHalfEdgeHorizon->getToVertex(); //attenzione all'ordine, deve essere in senso antiorario, regola mano destra
@@ -344,11 +348,11 @@ void ConvexHullCore::createNewFaces(std::list<Dcel::HalfEdge *> horizon, Dcel::V
     //Settaggio twin half edge, usando il modulo per garantire che il cerchio si chiuda
     int dim=(heEnter.size());
     for(int i=0; i < dim ; i++){
-
         heEnter[(i+(dim-1))%dim] -> setTwin(heExit[i]);
         heExit[i] -> setTwin(heEnter[(i+(dim-1))%dim]);
     }
 
+    return newFaces;
 }
 
 /**
@@ -392,7 +396,7 @@ void ConvexHullCore::findConvexHull(){
     executePermutation();
 
     //Pulizia della dcel, che conterrà il convex hull alla fine dell'algoritmo
-    this->dcel->reset();
+    this -> dcel -> reset();
 
     //Trova 4 punti che formano il tetraedro (quindi il convex hull di questi 4 punti)
     setTetrahedron();
@@ -426,27 +430,34 @@ void ConvexHullCore::findConvexHull(){
             horizon = getHorizon(facesVisibleByVertex);
             dcel->addDebugSphere((currentPoint)->getCoordinate(), 0.05, QColor(255,100,0));
 
+
+
             //Cancellazione Facce Visibili dal punto
-            removeFacesVisibleByVertex(facesVisibleByVertex);
-            //conflictGraph.deleteFaceFromVertex(facesVisibleByVertex);
+            conflictGraph.deleteFaceFromVertex(facesVisibleByVertex);
+            removeFacesVisibleByVertex(facesVisibleByVertex);            
 
 
             //Creazione nuove facce
-            createNewFaces(horizon,currentVertex);
+            std::vector<Dcel::Face*> newFaces = createNewFaces(horizon,currentVertex);
 
-            //aggiornamento cg
-            conflictGraph.rinitializeCG(point_i+1);
-
+            for(unsigned int i=0; i< newFaces.size();i++){
+                conflictGraph.updateCG(newFaces[i]);
+            }
 
 
         }
+        conflictGraph.getPossibleVertex(point_i);
+
+
         count++;
-        if(count ==1){
+        //cout<< "Ciclo numero >" <<cout<<endl;
+        if(count == 3){
+
             break;
         }
 
 
-        conflictGraph.deleteVertexFromFace(currentPoint);
+        //conflictGraph.deleteVertexFromFace(currentPoint);
     }
 
 

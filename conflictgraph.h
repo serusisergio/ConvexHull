@@ -17,8 +17,8 @@ public:
     bool isVisible(Dcel::Vertex* vertex,Dcel::Face* face);
     std::set<Dcel::Face*>* getFacesVisibleByVertex(Dcel::Vertex* vertex);
     std::set<Dcel::Vertex*>* getVertexVisibleByFace(Dcel::Face* face);
+    void getPossibleVertex(unsigned int point_i);
 
-    void rinitializeCG(int i);
 
 
     //Oggetti-Variabili passati da convexhull core
@@ -33,6 +33,7 @@ public:
     void deleteVertexFromFace(Dcel::Vertex* vertex);
     void deleteFaceAndVertex(std::set<Dcel::Face*>* faces, Dcel::Vertex* vertex);
     void deleteFaceFromVertex(std::set<Dcel::Face*>* faces);
+    void updateCG(Dcel::Face* face);
 
 
 private:

@@ -242,8 +242,9 @@ std::set<Dcel::Vertex *>* ConflictGraph::getVertexVisibleByFace(Dcel::Face *face
     }
 }
 
-void ConflictGraph::rinitializeCG(int i)
-{
+void ConflictGraph::getPossibleVertex(unsigned int point_i){
+    v_conflict.clear();
+    f_conflict.clear();
     Matrix<double,4,4> matrix;
 
     for (Dcel::FaceIterator fit = dcel->faceBegin(); fit != dcel->faceEnd(); ++fit){
@@ -264,7 +265,7 @@ void ConflictGraph::rinitializeCG(int i)
             halfEdge = halfEdge->getNext();
         }
 
-        for(int point=i; point<numberVertex; point++){
+        for(int point=(point_i); point<numberVertex; point++){
             Pointd p=vertexS[point]->getCoordinate();
             matrix(3,0) = p.x();
             matrix(3,1) = p.y();
@@ -277,17 +278,9 @@ void ConflictGraph::rinitializeCG(int i)
             }
         }
 
-
-        /*
-        std::list<Dcel::Vertex*>* stampa= f_conflict[face];
-        std::list<Dcel::Vertex*>::iterator p;
-        int z=0;
-
-
-        for (p = stampa->begin(); p != stampa->end(); p++){
-                cout << "Elemento " << z++ << ": " << *p <<" della lista della faccia "<<face->getId()<< endl;
-        }
-        */
-
     }
+}
+
+void ConflictGraph::updateCG(Dcel::Face* face){
+
 }
