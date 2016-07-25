@@ -395,6 +395,7 @@ void ConvexHullCore::findConvexHull(){
     for(unsigned int point_i=4; point_i < vertexS.size(); point_i++){
         dcel->clearDebugCylinders();
         dcel->clearDebugSpheres();
+        cout<< "Ciclo numero >" <<count<<endl;
 
         Dcel::Vertex* currentPoint=vertexS[point_i];
         cout<<"Current vertex->"<<currentPoint->getId()<<endl;
@@ -414,34 +415,38 @@ void ConvexHullCore::findConvexHull(){
 
             //Ricerca Orizzonte
             horizon = getHorizon(facesVisibleByVertex);
+            std::map<Dcel::HalfEdge *, std::set<Dcel::Vertex*>*> vertexMapForUpdateCG = conflictGraph.getVertexMapToControlForTheNewFace(horizon);
+
             dcel->addDebugSphere((currentPoint)->getCoordinate(), 0.05, QColor(255,100,0));
 
 
             //Cancellazione Facce Visibili dal punto
-            conflictGraph.deleteFaces(facesVisibleByVertex);
+            conflictGraph.deleteFaces( facesVisibleByVertex);
             removeFacesVisibleByVertex(facesVisibleByVertex);
 
 
             //Creazione nuove facce
             std::vector<Dcel::Face*> newFaces = createNewFaces(horizon,currentVertex);
 
-            for(unsigned int i=0; i< newFaces.size();i++){
-                 conflictGraph.updateCG(newFaces[i]);
+            std::list<Dcel::HalfEdge*>::iterator hit = horizon.begin();
+            for(unsigned int i=0; i< newFaces.size();i++,++hit){
+                Dcel::HalfEdge* currentHalfEdge = *hit;
+
+                std::set<Dcel::Vertex*>* setVertex = vertexMapForUpdateCG[currentHalfEdge];
+                conflictGraph.updateCG(newFaces[i], setVertex);
             }
 
 
         }
-        conflictGraph.getPossibleVertex(point_i+1);
-        cout<< "Ciclo numero >" <<count<<endl;
+
+        conflictGraph.deleteVertex(currentPoint);
 
         count++;
-        if(count == 8){
-
+        if(count == 2){
             break;
         }
 
 
-        conflictGraph.deleteVertex(currentPoint);
     }
 
 

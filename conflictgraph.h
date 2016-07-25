@@ -23,7 +23,9 @@ public:
 
     void deleteFaces(std::set<Dcel::Face*>* faces);
     
-    void updateCG(Dcel::Face* face,Dcel::HalfEdge* currentHalfEdgeHorizon);
+    void updateCG(Dcel::Face* faceToUpdate, std::set<Dcel::Vertex*>* setVertexForFace);
+
+    std::map<Dcel::HalfEdge*, std::set<Dcel::Vertex*>*> getVertexMapToControlForTheNewFace(std::list<Dcel::HalfEdge*> horizon);
 
     //Oggetti-Variabili passati da convexhull core
     DrawableDcel* dcel;

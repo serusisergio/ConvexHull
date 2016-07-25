@@ -141,7 +141,7 @@ void ConflictGraph::deleteFaces(std::set<Dcel::Face*> *faces){
         std::set<Dcel::Vertex*>* vertexFromRemoveFace = getVertexVisibleByFace(currentFace);
 
         //Per ogni vertice che vede la faccia, elimino il riferimento ad essa
-        for(std::set<Dcel::Vertex*>::iterator vit=vertexFromRemoveFace->begin; vit!= vertexFromRemoveFace->end();++vit){
+        for(std::set<Dcel::Vertex*>::iterator vit=vertexFromRemoveFace->begin(); vit!= vertexFromRemoveFace->end();++vit){
             Dcel::Vertex* currentVertex = *vit;
             f_conflict[currentVertex] -> erase(currentFace);
         }
@@ -198,6 +198,43 @@ std::set<Dcel::Vertex *>* ConflictGraph::getVertexVisibleByFace(Dcel::Face *face
     }
 }
 
+
+/**
+ * @brief ConflictGraph::UpdateCG()
+ * This method return the vertexs that are in conflict with the face f
+ */
+void ConflictGraph::updateCG(Dcel::Face* faceToUpdate,std::set<Dcel::Vertex*>* setVertexForFace){
+
+    for(std::set<Dcel::Vertex*>::iterator vit= setVertexForFace->begin(); vit != setVertexForFace->end(); ++vit){
+        Dcel::Vertex* currentVertex = *vit;
+        if(isVisible(currentVertex, faceToUpdate)){
+            addFaceToVertex( faceToUpdate, currentVertex );
+            addVertexToFace( currentVertex, faceToUpdate );
+        }
+    }
+}
+
+/**
+ * @brief ConflictGraph::getVertexMapToControlForTheNewFace()
+ * This method return the vertexs that are in conflict with the face f
+ */
+std::map<Dcel::HalfEdge *, std::set<Dcel::Vertex*> *> ConflictGraph::getVertexMapToControlForTheNewFace(std::list<Dcel::HalfEdge *> horizon){
+    std::map<Dcel::HalfEdge *, std::set<Dcel::Vertex*>*> vertexMap;
+
+    for(std::list<Dcel::HalfEdge*>::iterator hit = horizon.begin(); hit != horizon.end(); ++hit){
+        Dcel::HalfEdge* currentHalfEdge = *hit;
+        std::set<Dcel::Vertex*>* unionVertex= new std::set<Dcel::Vertex*>();
+
+        std::set<Dcel::Vertex*>* vertexFaceHorizon     = getVertexVisibleByFace(currentHalfEdge->getFace());
+        std::set<Dcel::Vertex*>* vertexFaceTwinHorizon = getVertexVisibleByFace(currentHalfEdge->getTwin()->getFace());
+
+        unionVertex->insert(vertexFaceHorizon->begin(),         vertexFaceHorizon->end());
+        unionVertex->insert(vertexFaceTwinHorizon->begin(), vertexFaceTwinHorizon->end());
+        vertexMap[currentHalfEdge] = unionVertex;
+    }
+    return vertexMap;
+}
+
 void ConflictGraph::updateCGIgnorante(unsigned int point_i){
     f_conflict.clear();
     v_conflict.clear();
@@ -208,8 +245,6 @@ void ConflictGraph::updateCGIgnorante(unsigned int point_i){
 
         int k=0;
         Dcel::HalfEdge* halfEdge = face->getOuterHalfEdge();
-
-
 
         for(int i=0;i<3;i++,k++){
             Dcel::Vertex* vertex = halfEdge->getFromVertex();
@@ -237,6 +272,4 @@ void ConflictGraph::updateCGIgnorante(unsigned int point_i){
     }
 }
 
-void ConflictGraph::updateCG(Dcel::Face* face,Dcel::HalfEdge* currentHalfEdgeHorizon){
 
-}
