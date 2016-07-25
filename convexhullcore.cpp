@@ -1,5 +1,26 @@
 #include "convexhullcore.h"
 
+/*********************************************************************
+ * Convex Hull Algorithm, developed by Sergio Serusi 65041           *
+ *********************************************************************
+ *                                                                   *
+ * Il cuore dell'algoritmo si trova nel metodo find Convex Hull,     *
+ * l'algoritmo stesso è interamente sviluppato in questa classe, il  *
+ * ConflictGraph è stato sviluppato in una classe apposita, in quanto*
+ * i compiti delle due classi erano differenti (Muratore non può ad  *
+ * esempio scrivere paper). Viene creato il tetraedro iniziale, dopo *
+ * questo si aggiorna il conflict graph e la dcel in modo ottimo     *
+ * grazie alle informazione che si porta dietro il Conflict Graph.   *
+ * I metodi presenti sono tutti commentati.                          *
+ * Per qualsiasi informazione o delucidazione contattare:            *
+ * serusi@unica.it oppure serusisergio@hotmail.it                    *
+ *********************************************************************/
+
+/**
+* @brief ConvexHullCore::ConvexHullCore()
+* This method is the constructor the class. Receive as input the pointer
+* at the dcel
+*/
 ConvexHullCore::ConvexHullCore(DrawableDcel *dcel){
 
     this->dcel         = dcel;
@@ -34,10 +55,12 @@ bool ConvexHullCore::verifyEuleroProperty(){
  */
 void ConvexHullCore::getVertexs(){
 
+    //Scorro tutti i vertici della dcel e gli salvo in un vettore perchè successivmante la dcel verrà resettata
     std::vector<Dcel::Vertex*>::iterator vectIt = vertexS.begin();
     for(Dcel::VertexIterator vit = dcel->vertexBegin(); vit != dcel->vertexEnd() && vectIt != vertexS.end(); ++vit,++vectIt){
         *vectIt = new Dcel::Vertex(**vit);
     }
+
 }
 
 /**
@@ -55,12 +78,14 @@ bool ConvexHullCore::isCoplanar(){
     Pointd p2= vertexS[2] -> getCoordinate();
     Pointd p3= vertexS[3] -> getCoordinate();
 
-    Matrix<double,4,4> matrix;
+    Eigen::Matrix<double,4,4> matrix;
     matrix<< p0.x(), p0.y(), p0.z(), 1,
              p1.x(), p1.y(), p1.z(), 1,
              p2.x(), p2.y(), p2.z(), 1,
              p3.x(), p3.y(), p3.z(), 1;
 
+    //CAlcolo il determiante della matrice, mi serve per sapere se i punti sono coplanari
+    // il requisito è che i punti non siano coplanari
     double det = matrix.determinant();
 
     if(det > std::numeric_limits<double>::epsilon() || det < -std::numeric_limits<double>::epsilon()){
@@ -77,6 +102,7 @@ bool ConvexHullCore::isCoplanar(){
  */
 void ConvexHullCore::executePermutation(){
 
+    //Eseguo la permutazione, in modo da garantire che i punti non siano coplanari
     do{
        std::random_shuffle(this->vertexS.begin(), this->vertexS.end());
     }while(isCoplanar());
@@ -90,7 +116,8 @@ void ConvexHullCore::executePermutation(){
  */
 void ConvexHullCore::setTetrahedron(){
 
-    std::list<Dcel::HalfEdge *> horizon;//Conterrà gli half edge del triangolo che verranno usati per costruire il tetraedro
+    //Conterrà gli half edge del triangolo che verranno usati per costruire il tetraedro
+    std::list<Dcel::HalfEdge *> horizon;
 
     //Aggiunta dei vertici nella dcel
     Dcel::Vertex* v1;
@@ -217,36 +244,46 @@ std::list<Dcel::HalfEdge*> ConvexHullCore::getHorizon(std::set<Dcel::Face *> *fa
  * This method is executed to remove the face that the current point see
  */
 void ConvexHullCore::removeFacesVisibleByVertex(std::set<Dcel::Face *>* facesVisibleByVertex){
+
+    //Conterrà i vertici da rimuovere
     std::list<Dcel::Vertex*> vertexToRemove;
 
-     for(std::set<Dcel::Face*>::iterator it = facesVisibleByVertex->begin(); it != facesVisibleByVertex->end(); ++it){
+    //Scorro il set delle facce visibili dal vertice
+    for(std::set<Dcel::Face*>::iterator it = facesVisibleByVertex->begin(); it != facesVisibleByVertex->end(); ++it){
 
-         Dcel::Face* face = *it;
+        Dcel::Face* face = *it;
 
-         for(Dcel::Face::IncidentHalfEdgeIterator vit = face->incidentHalfEdgeBegin(); vit != face->incidentHalfEdgeEnd(); ++vit){
+        //Scorro tutta la faccia
+        for(Dcel::Face::IncidentHalfEdgeIterator vit = face->incidentHalfEdgeBegin(); vit != face->incidentHalfEdgeEnd(); ++vit){
 
              Dcel::HalfEdge* he = *vit;
 
-             Dcel::Vertex* start = he->getFromVertex();
-             Dcel::Vertex* end = he->getToVertex();
+             //Prendo i vertici dell'half edge corrente
+             Dcel::Vertex* fromVertex = he->getFromVertex();
+             Dcel::Vertex* toVertex   = he->getToVertex();
 
+             //elimino l'half edge corrente dalla dcel
              this->dcel->deleteHalfEdge(he);
-             start->decrementCardinality();
-             end->decrementCardinality();
 
-             if(start->getCardinality() == 0){
-                 vertexToRemove.push_front(start);
+             //Decremento la cardinalità dei vertici in cui ho eliminato l'half edge
+             fromVertex -> decrementCardinality();
+             toVertex   -> decrementCardinality();
+
+             //quando i vertici hanno raggiunto la cardinalità 0, vuol dire che sono più necessari alla dcel e gli inserisco nella lista
+             if(fromVertex->getCardinality() == 0){
+                 vertexToRemove.push_front(fromVertex);
              }
-             if(end->getCardinality() == 0){
-                 vertexToRemove.push_front(end);
+             if(toVertex->getCardinality() == 0){
+                 vertexToRemove.push_front(toVertex);
              }
-         }
+        }
 
+        //elimino la faccia dalla dcel
+        this->dcel->deleteFace(face);
+    }
 
-         this->dcel->deleteFace(face);
-     }
-
-     for(std::list<Dcel::Vertex*>::iterator it = vertexToRemove.begin(); it != vertexToRemove.end(); ++it){
+    //elimino i vertici non necessari dalla dcel
+    for(std::list<Dcel::Vertex*>::iterator it = vertexToRemove.begin(); it != vertexToRemove.end(); ++it){
          this->dcel->deleteVertex(*it);
     }
 }
@@ -301,7 +338,8 @@ std::vector<Dcel::Face*> ConvexHullCore::createNewFaces(std::list<Dcel::HalfEdge
         v2 -> incrementCardinality();
         v3 -> incrementCardinality();
 
-        heExit[i] = halfEdge2; //Carico in un vettore gli halfedge uscenti dal vertice (che userò per settare i twin)
+        //Carico in un vettore gli halfedge uscenti dal vertice (che userò per settare i twin)
+        heExit[i] = halfEdge2;
 
         halfEdge3 -> setFromVertex(v3);
         halfEdge3 -> setToVertex(v1);
@@ -312,7 +350,8 @@ std::vector<Dcel::Face*> ConvexHullCore::createNewFaces(std::list<Dcel::HalfEdge
         v3 -> incrementCardinality();
         v1 -> incrementCardinality();
 
-        heEnter[i] = halfEdge3; //Carico in un vettore gli halfedge entranti del vertice (che usero per settare i twin)
+        //Carico in un vettore gli halfedge entranti del vertice (che usero per settare i twin)
+        heEnter[i] = halfEdge3;
         i++;
     }
 
@@ -337,14 +376,16 @@ bool ConvexHullCore::isNormalFaceTurnedTowardsThePoint(){
     Pointd p2= vertexS[2]->getCoordinate();
     Pointd p3= vertexS[3]->getCoordinate();
 
-    Matrix<double,4,4> matrix;
+    Eigen::Matrix<double,4,4> matrix;
     matrix<< p0.x(), p0.y(), p0.z(), 1,
              p1.x(), p1.y(), p1.z(), 1,
              p2.x(), p2.y(), p2.z(), 1,
              p3.x(), p3.y(), p3.z(), 1;
 
+    //Calcolo il determinante della matrice
     double det = matrix.determinant();
 
+    //se il det è <0 vuol dire che la normale della faccia punta verso il vertice 4, questo non va bene perchè cambierebbe il giro degli half edge nella faccia
     if(det > std::numeric_limits<double>::epsilon() ){
         return false;
     }else{
@@ -376,13 +417,13 @@ void ConvexHullCore::findConvexHull(){
     ConflictGraph conflictGraph= ConflictGraph(this->dcel, this-> vertexS);
     conflictGraph.initializeCG();
 
-    int count=0;
     //Ciclo principlae sei punti, dal punto 4 fino alla fine
     for(unsigned int point_i=4; point_i < vertexS.size(); point_i++){
 
 
         Dcel::Vertex* currentPoint=vertexS[point_i];
 
+        //Prendo le facce visibili dal vertice
         std::set<Dcel::Face*>* facesVisibleByVertex=conflictGraph.getFacesVisibleByVertex(currentPoint);
         std::list<Dcel::HalfEdge*> horizon;
 
@@ -407,6 +448,7 @@ void ConvexHullCore::findConvexHull(){
             //Creazione nuove facce
             std::vector<Dcel::Face*> newFaces = createNewFaces(horizon,currentVertex);
 
+            //Aggiornamento CG con le nuove facce inserite
             std::list<Dcel::HalfEdge*>::iterator hit = horizon.begin();
             for(unsigned int i=0; i< newFaces.size();i++,++hit){
                 Dcel::HalfEdge* currentHalfEdge = *hit;
@@ -417,7 +459,7 @@ void ConvexHullCore::findConvexHull(){
 
 
         }
-
+        //Eliminazione del punto dal conflict graph
         conflictGraph.deleteVertex(currentPoint);
 
     }

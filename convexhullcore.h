@@ -14,18 +14,9 @@
 #include <math.h>
 #include <eigen3/Eigen/Dense>
 #include <GUI/conflictgraph.h>
-#include <iostream>
 
-#include <deque>
-#include <iterator>
-#include "boost/graph/adjacency_list.hpp"
-#include "boost/graph/topological_sort.hpp"
 
-using namespace Eigen;
-using namespace std;
-
-class ConvexHullCore
-{
+class ConvexHullCore{
 public:
     //method
     ConvexHullCore(DrawableDcel *dcel);

@@ -18,15 +18,13 @@ ConflictGraph::ConflictGraph(DrawableDcel *dcel, std::vector<Dcel::Vertex*> &ver
  * t > 4 (because the 4 points are already in the dcel)
  */
 void ConflictGraph::initializeCG(){
-    Matrix<double,4,4> matrix;
+    Eigen::Matrix<double,4,4> matrix;
     
     for (Dcel::FaceIterator fit = dcel->faceBegin(); fit != dcel->faceEnd(); ++fit){
         Dcel::Face* face= *fit;
 
         int k=0;
         Dcel::HalfEdge* halfEdge = face->getOuterHalfEdge();
-
-
 
         for(int i=0;i<3;i++,k++){
             Dcel::Vertex* vertex = halfEdge->getFromVertex();
@@ -60,7 +58,7 @@ void ConflictGraph::initializeCG(){
  * This method is the used to verify if the vertex see the face
  */
 bool ConflictGraph::isVisible(Dcel::Vertex *vertex, Dcel::Face *face){
-    Matrix<double,4,4> matrix;
+    Eigen::Matrix<double,4,4> matrix;
     int k=0;
     for(Dcel::Face::IncidentVertexIterator vit = face->incidentVertexBegin(); vit != face->incidentVertexEnd(); ++vit,k++){
         Dcel::Vertex* vertex=*vit;
@@ -87,14 +85,6 @@ bool ConflictGraph::isVisible(Dcel::Vertex *vertex, Dcel::Face *face){
  */
 void ConflictGraph::addFaceToVertex(Dcel::Face* face, Dcel::Vertex* vertex){
 
-    //std::list<Dcel::Face*>* faceList = v_conflict[vertex];
-    /*
-    if(faceList==nullptr){
-        v_conflict[vertex]=new std::list<Dcel::Face*>();
-    }
-
-    v_conflict[vertex]->push_back(face);
-    */
     auto iter =this->f_conflict.find(vertex);
     if(iter!=f_conflict.end()){
         std::set<Dcel::Face*>* faceList = f_conflict[vertex];
@@ -111,14 +101,7 @@ void ConflictGraph::addFaceToVertex(Dcel::Face* face, Dcel::Vertex* vertex){
  * This method is the used to insert the vertex v that is in conflict with the face f
  */
 void ConflictGraph::addVertexToFace(Dcel::Vertex* vertex,Dcel::Face* face){
-    /*
-    std::list<Dcel::Vertex*>* vertexList = f_conflict[face];
 
-    if(vertexList==nullptr){
-        f_conflict[face]=new std::list<Dcel::Vertex*>();
-    }
-    f_conflict[face]->push_back(vertex);
-    */
     auto iter =this->v_conflict.find(face);
     if(iter!=v_conflict.end()){
         std::set<Dcel::Vertex*>* vertexList = v_conflict[face];
@@ -145,14 +128,8 @@ void ConflictGraph::deleteFaces(std::set<Dcel::Face*> *faces){
             Dcel::Vertex* currentVertex = *vit;
             f_conflict[currentVertex] -> erase(currentFace);
         }
-
-    }
-    //Elimino le facce
-    for(std::set<Dcel::Face*>::iterator fit = faces->begin(); fit != faces->end(); ++fit){
-        Dcel::Face* currentFace=*fit;
         v_conflict.erase(currentFace);
     }
-
 }
 
 /**
@@ -179,7 +156,7 @@ void ConflictGraph::deleteVertex(Dcel::Vertex* vertex){
 std::set<Dcel::Face *>* ConflictGraph::getFacesVisibleByVertex(Dcel::Vertex *vertex){
     auto iter =this->f_conflict.find(vertex);
     if(iter!=f_conflict.end()){
-        return f_conflict.at(vertex);
+        return new std::set<Dcel::Face*>(*f_conflict.at(vertex));
     }else{
         return new std::set<Dcel::Face*>();
     }
@@ -192,7 +169,7 @@ std::set<Dcel::Face *>* ConflictGraph::getFacesVisibleByVertex(Dcel::Vertex *ver
 std::set<Dcel::Vertex *>* ConflictGraph::getVertexVisibleByFace(Dcel::Face *face){
     auto iter =this->v_conflict.find(face);
     if(iter!=v_conflict.end()){
-        return v_conflict.at(face);
+        return new std::set<Dcel::Vertex *>(*v_conflict.at(face));
     }else{
         return new std::set<Dcel::Vertex *>();
     }
@@ -204,9 +181,10 @@ std::set<Dcel::Vertex *>* ConflictGraph::getVertexVisibleByFace(Dcel::Face *face
  * This method return the vertexs that are in conflict with the face f
  */
 void ConflictGraph::updateCG(Dcel::Face* faceToUpdate,std::set<Dcel::Vertex*>* setVertexForFace){
-
+    //Scorro il set dei vertici
     for(std::set<Dcel::Vertex*>::iterator vit= setVertexForFace->begin(); vit != setVertexForFace->end(); ++vit){
         Dcel::Vertex* currentVertex = *vit;
+        //Se il vertice è visibile dalla faccia allora lo aggiungo al cg
         if(isVisible(currentVertex, faceToUpdate)){
             addFaceToVertex( faceToUpdate, currentVertex );
             addVertexToFace( currentVertex, faceToUpdate );
@@ -216,7 +194,8 @@ void ConflictGraph::updateCG(Dcel::Face* faceToUpdate,std::set<Dcel::Vertex*>* s
 
 /**
  * @brief ConflictGraph::getVertexMapToControlForTheNewFace()
- * This method return the vertexs that are in conflict with the face f
+ * This method is used to get the vertex that can be in conflict with the new Faces
+ * @return map<Dcel::HalfEdge *, std::set<Dcel::Vertex*> *>
  */
 std::map<Dcel::HalfEdge *, std::set<Dcel::Vertex*> *> ConflictGraph::getVertexMapToControlForTheNewFace(std::list<Dcel::HalfEdge *> horizon){
     std::map<Dcel::HalfEdge *, std::set<Dcel::Vertex*>*> vertexMap;
@@ -233,43 +212,6 @@ std::map<Dcel::HalfEdge *, std::set<Dcel::Vertex*> *> ConflictGraph::getVertexMa
         vertexMap[currentHalfEdge] = unionVertex;
     }
     return vertexMap;
-}
-
-void ConflictGraph::updateCGIgnorante(unsigned int point_i){
-    f_conflict.clear();
-    v_conflict.clear();
-    Matrix<double,4,4> matrix;
-
-    for (Dcel::FaceIterator fit = dcel->faceBegin(); fit != dcel->faceEnd(); ++fit){
-        Dcel::Face* face= *fit;
-
-        int k=0;
-        Dcel::HalfEdge* halfEdge = face->getOuterHalfEdge();
-
-        for(int i=0;i<3;i++,k++){
-            Dcel::Vertex* vertex = halfEdge->getFromVertex();
-            Pointd p= vertex->getCoordinate();
-            matrix(k,0) = p.x();
-            matrix(k,1) = p.y();
-            matrix(k,2) = p.z();
-            matrix(k,3) = 1;
-            halfEdge = halfEdge->getNext();
-        }
-
-        for(int point=(point_i); point<numberVertex; point++){
-            Pointd p=vertexS[point]->getCoordinate();
-            matrix(3,0) = p.x();
-            matrix(3,1) = p.y();
-            matrix(3,2) = p.z();
-            matrix(3,3) = 1;
-
-            if(matrix.determinant() <- std::numeric_limits<double>::epsilon()){//nella
-                addFaceToVertex( face, vertexS[point]);
-                addVertexToFace( vertexS[point], face);
-            }
-        }
-
-    }
 }
 
 

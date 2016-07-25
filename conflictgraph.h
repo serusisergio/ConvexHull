@@ -5,11 +5,10 @@
 #include "GUI/managers/dcelmanager.h"
 #include "lib/dcel/drawable_dcel.h"
 
-using namespace Eigen;
-using namespace std;
 
-class ConflictGraph
-{
+
+class ConflictGraph{
+
 public:
     //metodi
     ConflictGraph(DrawableDcel* dcel, std::vector<Dcel::Vertex*> &vertexS);
@@ -22,7 +21,7 @@ public:
     void deleteVertex(Dcel::Vertex* vertex);
 
     void deleteFaces(std::set<Dcel::Face*>* faces);
-    
+
     void updateCG(Dcel::Face* faceToUpdate, std::set<Dcel::Vertex*>* setVertexForFace);
 
     std::map<Dcel::HalfEdge*, std::set<Dcel::Vertex*>*> getVertexMapToControlForTheNewFace(std::list<Dcel::HalfEdge*> horizon);
@@ -32,7 +31,7 @@ public:
     std::vector<Dcel::Vertex*> vertexS;
 
     //OggettiVariali creati in questa classe
-    //bisogna usare una lista, vista l'esigenza di eliminare ed aggiornare spesso è la soluzione migliore, il vettore è poco dinamico, per eliminare un oggetto bisogna
+    //bisogna usare una mappa di set, vista l'esigenza di eliminare ed aggiornare spesso è la soluzione migliore, il vettore è poco dinamico, per eliminare un oggetto bisogna
     //successivmente risistemare tutti gli elementi del vettore. Verrà usata la lista, come consigliato a lezione e tutoraggio.
     std::map<Dcel::Face*, std::set<Dcel::Vertex*>*> v_conflict;//Modificato, notata la lentezza ora uso un puntatore alla lista di puntatori
     std::map<Dcel::Vertex*, std::set<Dcel::Face*>*> f_conflict;
