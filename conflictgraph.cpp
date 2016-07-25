@@ -51,36 +51,7 @@ void ConflictGraph::initializeCG(){
             }
         }
 
-
-        /*
-        std::list<Dcel::Vertex*>* stampa= f_conflict[face];
-        std::list<Dcel::Vertex*>::iterator p;
-        int z=0;
-
-
-        for (p = stampa->begin(); p != stampa->end(); p++){
-                cout << "Elemento " << z++ << ": " << *p <<" della lista della faccia "<<face->getId()<< endl;
-        }
-        */
-
     }
-
-    /*
-    for(int point=4; point<numberVertex; point++){
-        cout<<"Vertex s "<<point<<"   : "<<vertexS[point]<<endl;
-
-        std::list<Dcel::Face*>* stampa= v_conflict[vertexS[point]];
-        std::list<Dcel::Face*>::iterator p;
-        int z=0;
-        if(stampa!=nullptr){
-            for (p = stampa->begin(); p != stampa->end(); p++){
-                    cout << "Elemento " << z++ << ": " << *p <<" della lista del vertice "<<point<< endl;
-            }
-        }
-
-
-    }*/
-
 
 }
 
@@ -124,14 +95,14 @@ void ConflictGraph::addFaceToVertex(Dcel::Face* face, Dcel::Vertex* vertex){
 
     v_conflict[vertex]->push_back(face);
     */
-    auto iter =this->v_conflict.find(vertex);
-    if(iter!=v_conflict.end()){
-        std::set<Dcel::Face*>* faceList = v_conflict[vertex];
+    auto iter =this->f_conflict.find(vertex);
+    if(iter!=f_conflict.end()){
+        std::set<Dcel::Face*>* faceList = f_conflict[vertex];
         faceList->insert(face);
     }else{
         std::set<Dcel::Face*>* faceList = new std::set<Dcel::Face*>();
         faceList->insert(face);
-        v_conflict[vertex]=faceList;
+        f_conflict[vertex]=faceList;
     }
 }
 
@@ -148,71 +119,56 @@ void ConflictGraph::addVertexToFace(Dcel::Vertex* vertex,Dcel::Face* face){
     }
     f_conflict[face]->push_back(vertex);
     */
-    auto iter =this->f_conflict.find(face);
-    if(iter!=f_conflict.end()){
-        std::set<Dcel::Vertex*>* vertexList = f_conflict[face];
+    auto iter =this->v_conflict.find(face);
+    if(iter!=v_conflict.end()){
+        std::set<Dcel::Vertex*>* vertexList = v_conflict[face];
         vertexList->insert(vertex);
     }else{
         std::set<Dcel::Vertex*>* vertexList = new std::set<Dcel::Vertex*>();
         vertexList->insert(vertex);
-        f_conflict[face]=vertexList;
+        v_conflict[face]=vertexList;
     }
 }
 
 /**
- * @brief ConflictGraph::deleteFaceFromVertex()
+ * @brief ConflictGraph::deleteFaces()
  * This method is the used to delete the face f from the vertex v, because the face f is not in conflict
  */
-void ConflictGraph::deleteFaceFromVertex(std::set<Dcel::Face*> *faces){
+void ConflictGraph::deleteFaces(std::set<Dcel::Face*> *faces){
+    //Per ogni faccia
+    for(std::set<Dcel::Face*>::iterator fit = faces->begin(); fit != faces->end(); ++fit){
+        Dcel::Face* currentFace=*fit;
+        std::set<Dcel::Vertex*>* vertexFromRemoveFace = getVertexVisibleByFace(currentFace);
 
-    for(std::set<Dcel::Face*>::iterator face = faces->begin(); face!= faces->end(); ++face){
-
-        std::map<Dcel::Vertex*, std::set<Dcel::Face*>*>::iterator vertexIt =v_conflict.begin();
-        for(; vertexIt != v_conflict.end(); ++vertexIt){
-            if(vertexIt->second->size()>0){
-                vertexIt->second->erase(*face);
-            }
+        //Per ogni vertice che vede la faccia, elimino il riferimento ad essa
+        for(std::set<Dcel::Vertex*>::iterator vit=vertexFromRemoveFace->begin; vit!= vertexFromRemoveFace->end();++vit){
+            Dcel::Vertex* currentVertex = *vit;
+            f_conflict[currentVertex] -> erase(currentFace);
         }
-        f_conflict.erase(*face);
+
     }
+    //Elimino le facce
+    for(std::set<Dcel::Face*>::iterator fit = faces->begin(); fit != faces->end(); ++fit){
+        Dcel::Face* currentFace=*fit;
+        v_conflict.erase(currentFace);
+    }
+
 }
 
 /**
  * @brief ConflictGraph::deleteVertexFromFace()
  * This method is the used to delete the vertex v from the face f, because the vertex v is not in conflict
  */
-void ConflictGraph::deleteVertexFromFace(Dcel::Vertex* vertex){
-    
-    v_conflict.erase(vertex);
+void ConflictGraph::deleteVertex(Dcel::Vertex* vertex){
 
-    for(std::map<Dcel::Face*, std::set<Dcel::Vertex*>*>::iterator fit = f_conflict.begin(); fit != f_conflict.end(); ++fit){
-         if(fit->second != nullptr){
-             fit->second->erase(vertex);
-         }
+    std::set<Dcel::Face*>* facesToRemoveVertex = getFacesVisibleByVertex(vertex);
+
+    for(std::set<Dcel::Face*>::iterator fit = facesToRemoveVertex->begin(); fit != facesToRemoveVertex->end(); ++fit){
+        Dcel::Face* currentFace=*fit;
+        v_conflict[currentFace]->erase(vertex);
     }
-    
-}
 
-void ConflictGraph::deleteFaceAndVertex(std::set<Dcel::Face *>* faces, Dcel::Vertex* vertex){
-    /*
-
-    //Se la lista delle facce visibili da vertex non è vuota allora cancellale
-    if(faces->size()>0){
-        for(auto i : *faces){
-            std::list<Dcel::Vertex *>* vertexs = f_conflict[i];
-            for(auto j : *vertexs){
-                std::list<Dcel::Face *>* face =v_conflict[j];
-                face->erase(i);
-            }
-            cout<<"Faccia "<<i->getId()<<endl;
-
-        }
-    }
-    cout<<"____"<<endl;
-    //Elimina il vertice
-    v_conflict.erase(vertex);
-
-*/
+    f_conflict.erase(vertex);
 }
 
 
@@ -221,9 +177,9 @@ void ConflictGraph::deleteFaceAndVertex(std::set<Dcel::Face *>* faces, Dcel::Ver
  * This method return the faces that are in conflict with vertex
  */
 std::set<Dcel::Face *>* ConflictGraph::getFacesVisibleByVertex(Dcel::Vertex *vertex){
-    auto iter =this->v_conflict.find(vertex);
-    if(iter!=v_conflict.end()){
-        return v_conflict.at(vertex);
+    auto iter =this->f_conflict.find(vertex);
+    if(iter!=f_conflict.end()){
+        return f_conflict.at(vertex);
     }else{
         return new std::set<Dcel::Face*>();
     }
@@ -234,17 +190,17 @@ std::set<Dcel::Face *>* ConflictGraph::getFacesVisibleByVertex(Dcel::Vertex *ver
  * This method return the vertexs that are in conflict with the face f
  */
 std::set<Dcel::Vertex *>* ConflictGraph::getVertexVisibleByFace(Dcel::Face *face){
-    auto iter =this->f_conflict.find(face);
-    if(iter!=f_conflict.end()){
-        return f_conflict.at(face);
+    auto iter =this->v_conflict.find(face);
+    if(iter!=v_conflict.end()){
+        return v_conflict.at(face);
     }else{
         return new std::set<Dcel::Vertex *>();
     }
 }
 
-void ConflictGraph::getPossibleVertex(unsigned int point_i){
-    v_conflict.clear();
+void ConflictGraph::updateCGIgnorante(unsigned int point_i){
     f_conflict.clear();
+    v_conflict.clear();
     Matrix<double,4,4> matrix;
 
     for (Dcel::FaceIterator fit = dcel->faceBegin(); fit != dcel->faceEnd(); ++fit){
@@ -281,6 +237,6 @@ void ConflictGraph::getPossibleVertex(unsigned int point_i){
     }
 }
 
-void ConflictGraph::updateCG(Dcel::Face* face){
+void ConflictGraph::updateCG(Dcel::Face* face,Dcel::HalfEdge* currentHalfEdgeHorizon){
 
 }

@@ -17,9 +17,13 @@ public:
     bool isVisible(Dcel::Vertex* vertex,Dcel::Face* face);
     std::set<Dcel::Face*>* getFacesVisibleByVertex(Dcel::Vertex* vertex);
     std::set<Dcel::Vertex*>* getVertexVisibleByFace(Dcel::Face* face);
-    void getPossibleVertex(unsigned int point_i);
+    void updateCGIgnorante(unsigned int point_i);
 
+    void deleteVertex(Dcel::Vertex* vertex);
 
+    void deleteFaces(std::set<Dcel::Face*>* faces);
+    
+    void updateCG(Dcel::Face* face,Dcel::HalfEdge* currentHalfEdgeHorizon);
 
     //Oggetti-Variabili passati da convexhull core
     DrawableDcel* dcel;
@@ -28,12 +32,9 @@ public:
     //OggettiVariali creati in questa classe
     //bisogna usare una lista, vista l'esigenza di eliminare ed aggiornare spesso è la soluzione migliore, il vettore è poco dinamico, per eliminare un oggetto bisogna
     //successivmente risistemare tutti gli elementi del vettore. Verrà usata la lista, come consigliato a lezione e tutoraggio.
-    std::map<Dcel::Face*, std::set<Dcel::Vertex*>*> f_conflict;//Modificato, notata la lentezza ora uso un puntatore alla lista di puntatori
-    std::map<Dcel::Vertex*, std::set<Dcel::Face*>*> v_conflict;
-    void deleteVertexFromFace(Dcel::Vertex* vertex);
-    void deleteFaceAndVertex(std::set<Dcel::Face*>* faces, Dcel::Vertex* vertex);
-    void deleteFaceFromVertex(std::set<Dcel::Face*>* faces);
-    void updateCG(Dcel::Face* face);
+    std::map<Dcel::Face*, std::set<Dcel::Vertex*>*> v_conflict;//Modificato, notata la lentezza ora uso un puntatore alla lista di puntatori
+    std::map<Dcel::Vertex*, std::set<Dcel::Face*>*> f_conflict;
+
 
 
 private:

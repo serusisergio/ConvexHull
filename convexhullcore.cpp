@@ -160,6 +160,7 @@ void ConvexHullCore::setTetrahedron(){
  * This method, return a horizon list
  */
 std::list<Dcel::HalfEdge*> ConvexHullCore::getHorizon(std::set<Dcel::Face *> *facesVisibleByVertex){
+
     std::set<Dcel::HalfEdge*> horizonUnordered;
     std::list<Dcel::HalfEdge*> horizonOrdered;
     std::map<Dcel::Vertex*, Dcel::HalfEdge*> hm;
@@ -225,54 +226,38 @@ std::list<Dcel::HalfEdge*> ConvexHullCore::getHorizon(std::set<Dcel::Face *> *fa
  * This method is executed to remove the face that the current point see
  */
 void ConvexHullCore::removeFacesVisibleByVertex(std::set<Dcel::Face *>* facesVisibleByVertex){
-    //Conterra i vertici da rimuovere
-    std::list<Dcel::Vertex*> vertexsToRemove;
+    std::list<Dcel::Vertex*> vertexToRemove;
 
-    //Scorro le facce visibili dal punto per eliminarle ed eliminare gli HE delle stesse
-    for(std::set<Dcel::Face*>::iterator fit = facesVisibleByVertex->begin(); fit != facesVisibleByVertex->end(); ++fit){
-        Dcel::Face* currentFace = *fit;
+     for(std::set<Dcel::Face*>::iterator it = facesVisibleByVertex->begin(); it != facesVisibleByVertex->end(); ++it){
 
-        //Parto da un HE della faccia
-        Dcel::HalfEdge* outerHE= currentFace ->getOuterHalfEdge();
+         Dcel::Face* face = *it;
 
-        //E scorro tutta la faccia
-        for(int i=0;i<3;i++){
-            Dcel::Vertex* from = outerHE -> getFromVertex();
-            Dcel::Vertex* to   = outerHE -> getToVertex();
+         for(Dcel::Face::IncidentHalfEdgeIterator vit = face->incidentHalfEdgeBegin(); vit != face->incidentHalfEdgeEnd(); ++vit){
 
-            //decremento la cardinalità dei vertici cui tratta l'hEdge corrente
-            from -> decrementCardinality();
-            to   -> decrementCardinality();
+             Dcel::HalfEdge* he = *vit;
 
-            //elimino half edge
-            dcel -> deleteHalfEdge(outerHE);
-            cout<<"Eliminazione He->"<<outerHE->getId()<<" -> della faccia ->"<<currentFace->getId()<<endl;
+             Dcel::Vertex* start = he->getFromVertex();
+             Dcel::Vertex* end = he->getToVertex();
 
-            outerHE = outerHE->getNext();
+             this->dcel->deleteHalfEdge(he);
+             start->decrementCardinality();
+             end->decrementCardinality();
 
-            //Metto i vertici con cardinalità xero, stanno ad indicare che il vertice non è più utile alla dcel
-            if(from -> getCardinality() == 0){
-                vertexsToRemove.push_back(from);
-            }
-            if(to -> getCardinality() == 0){
-                vertexsToRemove.push_back(to);
-            }
-        }
+             if(start->getCardinality() == 0){
+                 vertexToRemove.push_front(start);
+             }
+             if(end->getCardinality() == 0){
+                 vertexToRemove.push_front(end);
+             }
+         }
 
-        //Una volta eliminato il tutto riguardante la faccia, allora elimino la faccia
-        this -> dcel -> deleteFace(currentFace);
-        cout<<"Eliminazione faccia ->"<<currentFace->getId()<<endl;
 
+         this->dcel->deleteFace(face);
+     }
+
+     for(std::list<Dcel::Vertex*>::iterator it = vertexToRemove.begin(); it != vertexToRemove.end(); ++it){
+         this->dcel->deleteVertex(*it);
     }
-
-    //Elimino i vertici non neccessario
-    if(vertexsToRemove.size()>0){
-        for(std::list<Dcel::Vertex*>::iterator heit= vertexsToRemove.begin(); heit!= vertexsToRemove.end() ; ++heit){
-            dcel->deleteVertex(*heit);
-            cout<<"Rimozione vertice ->"<<(*heit)->getId()<<endl;
-        }
-    }
-
 }
 
 /**
@@ -402,7 +387,7 @@ void ConvexHullCore::findConvexHull(){
     setTetrahedron();
 
     //Inizializza il conflict graph con tutte le coppie visibili (Pt,f) con f faccia in dcel e t>4 (quindi con i punti successivi)
-    ConflictGraph conflictGraph=ConflictGraph(this->dcel, this-> vertexS);
+    ConflictGraph conflictGraph= ConflictGraph(this->dcel, this-> vertexS);
     conflictGraph.initializeCG();
 
     int count=0;
@@ -426,38 +411,37 @@ void ConvexHullCore::findConvexHull(){
             cout<<"Aggiunto vertice alla DCEL "<<endl;
 
 
+
             //Ricerca Orizzonte
             horizon = getHorizon(facesVisibleByVertex);
             dcel->addDebugSphere((currentPoint)->getCoordinate(), 0.05, QColor(255,100,0));
 
 
-
             //Cancellazione Facce Visibili dal punto
-            conflictGraph.deleteFaceFromVertex(facesVisibleByVertex);
-            removeFacesVisibleByVertex(facesVisibleByVertex);            
+            conflictGraph.deleteFaces(facesVisibleByVertex);
+            removeFacesVisibleByVertex(facesVisibleByVertex);
 
 
             //Creazione nuove facce
             std::vector<Dcel::Face*> newFaces = createNewFaces(horizon,currentVertex);
 
             for(unsigned int i=0; i< newFaces.size();i++){
-                conflictGraph.updateCG(newFaces[i]);
+                 conflictGraph.updateCG(newFaces[i]);
             }
 
 
         }
-        conflictGraph.getPossibleVertex(point_i);
-
+        conflictGraph.getPossibleVertex(point_i+1);
+        cout<< "Ciclo numero >" <<count<<endl;
 
         count++;
-        //cout<< "Ciclo numero >" <<cout<<endl;
-        if(count == 3){
+        if(count == 8){
 
             break;
         }
 
 
-        //conflictGraph.deleteVertexFromFace(currentPoint);
+        conflictGraph.deleteVertex(currentPoint);
     }
 
 
