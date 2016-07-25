@@ -13,7 +13,7 @@
 #include "lib/common/timer.h"
 #include <math.h>
 #include <eigen3/Eigen/Dense>
-#include <GUI/conflictgraph.h>
+#include <GUI/ConvexHullCore/conflictgraph.h>
 
 
 class ConvexHullCore{
