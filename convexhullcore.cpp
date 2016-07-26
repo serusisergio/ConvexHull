@@ -12,6 +12,7 @@
  * questo si aggiorna il conflict graph e la dcel in modo ottimo     *
  * grazie alle informazione che si porta dietro il Conflict Graph.   *
  * I metodi presenti sono tutti commentati.                          *
+ * Per avere più dettagli considerare il pdf allegato al progetto.   *
  * Per qualsiasi informazione o delucidazione contattare:            *
  * serusi@unica.it oppure serusisergio@hotmail.it                    *
  *********************************************************************/

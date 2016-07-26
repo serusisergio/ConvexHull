@@ -12,7 +12,6 @@
 #include "GUI/managers/dcelmanager.h"
 #include "lib/common/timer.h"
 #include <math.h>
-#include <eigen3/Eigen/Dense>
 #include <GUI/ConvexHullCore/conflictgraph.h>
 
 
