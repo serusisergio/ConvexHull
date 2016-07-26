@@ -371,6 +371,8 @@ std::vector<Dcel::Face*> ConvexHullCore::createNewFaces(std::list<Dcel::HalfEdge
  * @return True if the normal of the face turned towards the point
  */
 bool ConvexHullCore::isNormalFaceTurnedTowardsThePoint(){
+    //Questo metodo è di vitale importanza, se non eseguito crea bug che si notano una volta che vengono eliminate delle facce, ed è estremamente
+    //difficile da rilevare.
     Pointd p0= vertexS[0]->getCoordinate();
     Pointd p1= vertexS[1]->getCoordinate();
     Pointd p2= vertexS[2]->getCoordinate();
