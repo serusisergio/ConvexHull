@@ -21,25 +21,23 @@ public:
     ConvexHullCore(DrawableDcel *dcel);
     void findConvexHull();
     
-    //variable
-    std::vector<Dcel::Vertex*> vertexS;
-
 private:
     //method
-    bool verifyEuleroProperty();
+    bool verifyEuleroProperty() const;
     void getVertexs();
     void executePermutation();
-    bool isCoplanar();
+    bool isCoplanar() const;
     void setTetrahedron();
-    std::list<Dcel::HalfEdge*> getHorizon(std::set<Dcel::Face*>* facesVisibleByVertex);
+    std::list<Dcel::HalfEdge*> getHorizon(std::set<Dcel::Face*>* facesVisibleByVertex) const;
     void removeFacesVisibleByVertex(std::set<Dcel::Face*>* facesVisibleByVertex);
     std::vector<Dcel::Face*> createNewFaces(std::list<Dcel::HalfEdge*> horizon, Dcel::Vertex*);
-    bool isNormalFaceTurnedTowardsThePoint();
+    bool isNormalFaceTurnedTowardsThePoint() const;
 
     //variable
     DrawableDcel* dcel;
-    int numberVertex=0;
-    
+    int numberVertex;
+    std::vector<Dcel::Vertex*> vertexS;
+
 };
 
 #endif // CONVEXHULLCORE_H

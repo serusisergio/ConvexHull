@@ -16,9 +16,9 @@
  * This method is the constructor of the ConflictGraph class, it receive the pointer of the dcel
  * and the points.
  */
-ConflictGraph::ConflictGraph(DrawableDcel *dcel, std::vector<Dcel::Vertex*> &vertexS){
-    this->dcel = dcel;
-    this->vertexS = vertexS;
+ConflictGraph::ConflictGraph(DrawableDcel *Dcel,const std::vector<Dcel::Vertex*> &vertexS){
+    this->dcel         = Dcel;
+    this->vertexS      = vertexS;
     this->numberVertex = this->vertexS.size();
 }
 
@@ -69,7 +69,7 @@ void ConflictGraph::initializeCG(){
  * @brief ConflictGraph::isVisible()
  * This method is the used to verify if the vertex see the face
  */
-bool ConflictGraph::isVisible(Dcel::Vertex *vertex, Dcel::Face *face){
+bool ConflictGraph::isVisible(Dcel::Vertex *vertex, Dcel::Face *face) const{
     //Data la faccia ed un vertice, verifico se sono in conflitto
     Eigen::Matrix<double,4,4> matrix;
     int k=0;
@@ -171,7 +171,7 @@ void ConflictGraph::deleteVertex(Dcel::Vertex* vertex){
  * @brief ConflictGraph::getFacesVisibleByVertex()
  * This method return the faces that are in conflict with vertex
  */
-std::set<Dcel::Face *>* ConflictGraph::getFacesVisibleByVertex(Dcel::Vertex *vertex){
+std::set<Dcel::Face *>* ConflictGraph::getFacesVisibleByVertex(Dcel::Vertex *vertex) const{
     auto iter =this->f_conflict.find(vertex);
     if(iter!=f_conflict.end()){
         return new std::set<Dcel::Face*>(*f_conflict.at(vertex));
@@ -184,7 +184,7 @@ std::set<Dcel::Face *>* ConflictGraph::getFacesVisibleByVertex(Dcel::Vertex *ver
  * @brief ConflictGraph::getVertexVisibleByFace()
  * This method return the vertexs that are in conflict with the face f
  */
-std::set<Dcel::Vertex *>* ConflictGraph::getVertexVisibleByFace(Dcel::Face *face){
+std::set<Dcel::Vertex *>* ConflictGraph::getVertexVisibleByFace(Dcel::Face *face) const{
     auto iter =this->v_conflict.find(face);
     if(iter!=v_conflict.end()){
         return new std::set<Dcel::Vertex *>(*v_conflict.at(face));
@@ -215,7 +215,7 @@ void ConflictGraph::updateCG(Dcel::Face* faceToUpdate,std::set<Dcel::Vertex*>* s
  * This method is used to get the vertex that can be in conflict with the new Faces
  * @return map<Dcel::HalfEdge *, std::set<Dcel::Vertex*> *>
  */
-std::map<Dcel::HalfEdge *, std::set<Dcel::Vertex*> *> ConflictGraph::getVertexMapToControlForTheNewFace(std::list<Dcel::HalfEdge *> horizon){
+std::map<Dcel::HalfEdge *, std::set<Dcel::Vertex*> *> ConflictGraph::getVertexMapToControlForTheNewFace(std::list<Dcel::HalfEdge *> horizon) const{
     std::map<Dcel::HalfEdge *, std::set<Dcel::Vertex*>*> vertexMap;
 
     //Scorro l'orizzonte, e per ogni half edge dell'orizzonte prendo i vertici in conflitto con la faccia dell'half edge consideranto e del suo twin e lo associo all'half edge dell'orizzonte

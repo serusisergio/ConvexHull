@@ -35,7 +35,7 @@ ConvexHullCore::ConvexHullCore(DrawableDcel *dcel){
  * This method is executed to verify the Eurler's formula (n-ne+nf=2)
  * @return True if the dcel respects the property, False otherwhise
  */
-bool ConvexHullCore::verifyEuleroProperty(){
+bool ConvexHullCore::verifyEuleroProperty() const {
 
     int numberFace   = dcel->getNumberFaces();
     int numberVertex = dcel->getNumberVertices();
@@ -72,7 +72,7 @@ void ConvexHullCore::getVertexs(){
  * In this method is used eigen library, it can easily perform the
  * determinant of a matrix
  */
-bool ConvexHullCore::isCoplanar(){
+bool ConvexHullCore::isCoplanar() const{
 
     Pointd p0= vertexS[0] -> getCoordinate();
     Pointd p1= vertexS[1] -> getCoordinate();
@@ -187,7 +187,7 @@ void ConvexHullCore::setTetrahedron(){
  * This method is executed to find the horizon by a faces visible by a vertex
  * This method, return a horizon list
  */
-std::list<Dcel::HalfEdge*> ConvexHullCore::getHorizon(std::set<Dcel::Face *> *facesVisibleByVertex){
+std::list<Dcel::HalfEdge*> ConvexHullCore::getHorizon(std::set<Dcel::Face *> *facesVisibleByVertex) const {
 
     std::set<Dcel::HalfEdge*> horizonUnordered;
     std::list<Dcel::HalfEdge*> horizonOrdered;
@@ -371,13 +371,13 @@ std::vector<Dcel::Face*> ConvexHullCore::createNewFaces(std::list<Dcel::HalfEdge
  * This method is executed to verify if the normal of the face (the face created by the initial point, the first triangle) torned towards the fourth point
  * @return True if the normal of the face turned towards the point
  */
-bool ConvexHullCore::isNormalFaceTurnedTowardsThePoint(){
+bool ConvexHullCore::isNormalFaceTurnedTowardsThePoint() const {
     //Questo metodo è di vitale importanza, se non eseguito crea bug che si notano una volta che vengono eliminate delle facce, ed è estremamente
     //difficile da rilevare.
-    Pointd p0= vertexS[0]->getCoordinate();
-    Pointd p1= vertexS[1]->getCoordinate();
-    Pointd p2= vertexS[2]->getCoordinate();
-    Pointd p3= vertexS[3]->getCoordinate();
+    Pointd p0 = vertexS[0] -> getCoordinate();
+    Pointd p1 = vertexS[1] -> getCoordinate();
+    Pointd p2 = vertexS[2] -> getCoordinate();
+    Pointd p3 = vertexS[3] -> getCoordinate();
 
     Eigen::Matrix<double,4,4> matrix;
     matrix<< p0.x(), p0.y(), p0.z(), 1,
