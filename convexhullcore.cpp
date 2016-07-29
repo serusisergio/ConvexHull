@@ -20,7 +20,7 @@
 /**
 * @brief ConvexHullCore::ConvexHullCore()
 * This method is the constructor the class. Receive as input the pointer
-* at the dcel
+* of the dcel, the pointer of the mainWindow and the const variable isClicked (if the user would see the interactive convex hull)
 */
 ConvexHullCore::ConvexHullCore(DrawableDcel *dcel,MainWindow* mainWindow,const bool isClicked):isClicked(isClicked){
 
@@ -422,7 +422,7 @@ void ConvexHullCore::findConvexHull(){
     conflictGraph.initializeCG();
 
     //Ciclo principlae sei punti, dal punto 4 fino alla fine
-    for(unsigned int point_i=4; point_i < vertexS.size(); point_i++){
+    for(int point_i=4; point_i < numberVertex; point_i++){
 
         Dcel::Vertex* currentPoint=vertexS[point_i];
 
