@@ -22,11 +22,13 @@
 * This method is the constructor the class. Receive as input the pointer
 * at the dcel
 */
-ConvexHullCore::ConvexHullCore(DrawableDcel *dcel){
+ConvexHullCore::ConvexHullCore(DrawableDcel *dcel,MainWindow* mainWindow, bool isClicked){
 
-    this->dcel         = dcel;
-    this->numberVertex = dcel->getNumberVertices();
-    this->vertexS      = std::vector<Dcel::Vertex*>(numberVertex);
+    this -> dcel         = dcel;
+    this -> numberVertex = dcel->getNumberVertices();
+    this -> vertexS      = std::vector<Dcel::Vertex*>(numberVertex);
+    this -> mainWindow   = mainWindow;
+    this -> isClicked    = isClicked;
 
 }
 
@@ -37,9 +39,9 @@ ConvexHullCore::ConvexHullCore(DrawableDcel *dcel){
  */
 bool ConvexHullCore::verifyEuleroProperty() const {
 
-    int numberFace   = dcel->getNumberFaces();
-    int numberVertex = dcel->getNumberVertices();
-    int numberEdge   = dcel->getNumberHalfEdges()/2;
+    int numberFace   = dcel -> getNumberFaces();
+    int numberVertex = dcel -> getNumberVertices();
+    int numberEdge   = dcel -> getNumberHalfEdges()/2;
 
     int euler        = numberVertex-numberFace+numberEdge;
 
@@ -423,7 +425,6 @@ void ConvexHullCore::findConvexHull(){
     //Ciclo principlae sei punti, dal punto 4 fino alla fine
     for(unsigned int point_i=4; point_i < vertexS.size(); point_i++){
 
-
         Dcel::Vertex* currentPoint=vertexS[point_i];
 
         //Prendo le facce visibili dal vertice
@@ -458,6 +459,14 @@ void ConvexHullCore::findConvexHull(){
 
                 std::set<Dcel::Vertex*>* setVertex = vertexMapForUpdateCG[currentHalfEdge];
                 conflictGraph.updateCG(newFaces[i], setVertex);
+            }
+
+            //Se l'utente vuole vedere come viene costruito il CH passo per passo, aggiorno il canvas. Questo If l'ho messo
+            //dentro l'if principale dell'algoritmo per evitare di aggiornare il canvas inutilmente
+            if(isClicked){
+                //Eccolooo..
+                this -> dcel       -> update();
+                this -> mainWindow -> updateGlCanvas();
             }
 
 

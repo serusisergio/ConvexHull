@@ -18,7 +18,7 @@
 class ConvexHullCore{
 public:
     //method
-    ConvexHullCore(DrawableDcel *dcel);
+    ConvexHullCore(DrawableDcel *dcel,MainWindow* mainWindow, bool isClicked);
     void findConvexHull();
     
 private:
@@ -35,8 +35,10 @@ private:
 
     //variable
     DrawableDcel* dcel;
+    MainWindow* mainWindow;
     int numberVertex;
     std::vector<Dcel::Vertex*> vertexS;
+    bool isClicked;
 
 };
 

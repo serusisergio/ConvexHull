@@ -29,9 +29,10 @@ ConflictGraph::ConflictGraph(DrawableDcel *Dcel,const std::vector<Dcel::Vertex*>
  * t > 4 (because the 4 points are already in the dcel)
  */
 void ConflictGraph::initializeCG(){
+    //Uso Eigen, come consigliato nelle slide. Libreria ottiminizzata per le matrici.
     Eigen::Matrix<double,4,4> matrix;
-    
-    //Scorro le 4 facce presenti nella dcel
+
+    //Per ogni faccia presente nella dcel, (sono 4)
     for (Dcel::FaceIterator fit = dcel->faceBegin(); fit != dcel->faceEnd(); ++fit){
         Dcel::Face* face= *fit;
 
@@ -62,7 +63,6 @@ void ConflictGraph::initializeCG(){
         }
 
     }
-
 }
 
 /**
@@ -226,6 +226,7 @@ std::map<Dcel::HalfEdge *, std::set<Dcel::Vertex*> *> ConflictGraph::getVertexMa
         std::set<Dcel::Vertex*>* vertexFaceHorizon     = getVertexVisibleByFace(currentHalfEdge->getFace());
         std::set<Dcel::Vertex*>* vertexFaceTwinHorizon = getVertexVisibleByFace(currentHalfEdge->getTwin()->getFace());
 
+        //Inserisco i vertici delle due facce
         unionVertex->insert(vertexFaceHorizon->begin(),         vertexFaceHorizon->end());
         unionVertex->insert(vertexFaceTwinHorizon->begin(), vertexFaceTwinHorizon->end());
         vertexMap[currentHalfEdge] = unionVertex;
