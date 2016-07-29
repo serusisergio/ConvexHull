@@ -22,13 +22,12 @@
 * This method is the constructor the class. Receive as input the pointer
 * at the dcel
 */
-ConvexHullCore::ConvexHullCore(DrawableDcel *dcel,MainWindow* mainWindow, bool isClicked){
+ConvexHullCore::ConvexHullCore(DrawableDcel *dcel,MainWindow* mainWindow,const bool isClicked):isClicked(isClicked){
 
     this -> dcel         = dcel;
     this -> numberVertex = dcel->getNumberVertices();
     this -> vertexS      = std::vector<Dcel::Vertex*>(numberVertex);
     this -> mainWindow   = mainWindow;
-    this -> isClicked    = isClicked;
 
 }
 

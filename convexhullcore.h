@@ -38,7 +38,7 @@ private:
     MainWindow* mainWindow;
     int numberVertex;
     std::vector<Dcel::Vertex*> vertexS;
-    bool isClicked;
+    const bool isClicked;
 
 };
 
