@@ -11,7 +11,7 @@ class ConflictGraph{
 
 public:
     //metodi
-    ConflictGraph(DrawableDcel* dcel,const std::vector<Dcel::Vertex*> &vertexS);
+    ConflictGraph(DrawableDcel* dcel,const std::vector<Dcel::Vertex*> &vertexS, const int numberVertex);
     void initializeCG();
     bool isVisible(Dcel::Vertex* vertex,Dcel::Face* face) const;
     std::set<Dcel::Face*>* getFacesVisibleByVertex(Dcel::Vertex* vertex) const;
@@ -32,7 +32,7 @@ public:
 
 
 private:
-    int numberVertex;
+    const int numberVertex;
 
     //Oggetti-Variabili passati da convexhull core
     DrawableDcel* dcel;

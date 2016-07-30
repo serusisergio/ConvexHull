@@ -42,9 +42,9 @@ bool ConvexHullCore::verifyEuleroProperty() const {
     int numberVertex = dcel -> getNumberVertices();
     int numberEdge   = dcel -> getNumberHalfEdges()/2;
 
-    int euler        = numberVertex-numberFace+numberEdge;
+    int euler        = numberVertex - numberFace + numberEdge;
 
-    if(euler==2){
+    if(euler == 2){
         return true;
     }else{
         return false;
@@ -59,7 +59,7 @@ void ConvexHullCore::getVertexs(){
 
     //Scorro tutti i vertici della dcel e gli salvo in un vettore perchè successivmante la dcel verrà resettata
     std::vector<Dcel::Vertex*>::iterator vectIt = vertexS.begin();
-    for(Dcel::VertexIterator vit = dcel->vertexBegin(); vit != dcel->vertexEnd() && vectIt != vertexS.end(); ++vit,++vectIt){
+    for(Dcel::VertexIterator vit = dcel->vertexBegin(); vit != dcel->vertexEnd(); ++vit,++vectIt){
         *vectIt = new Dcel::Vertex(**vit);
     }
 
@@ -75,11 +75,13 @@ void ConvexHullCore::getVertexs(){
  */
 bool ConvexHullCore::isCoplanar() const{
 
+    //Recupero i primi 4 punti che formeranno il tetraedero
     Pointd p0= vertexS[0] -> getCoordinate();
     Pointd p1= vertexS[1] -> getCoordinate();
     Pointd p2= vertexS[2] -> getCoordinate();
     Pointd p3= vertexS[3] -> getCoordinate();
 
+    //Matrice Eigen che conterra i primi 4 punti
     Eigen::Matrix<double,4,4> matrix;
     matrix<< p0.x(), p0.y(), p0.z(), 1,
              p1.x(), p1.y(), p1.z(), 1,
@@ -190,6 +192,14 @@ void ConvexHullCore::setTetrahedron(){
  */
 std::list<Dcel::HalfEdge*> ConvexHullCore::getHorizon(std::set<Dcel::Face *> *facesVisibleByVertex) const {
 
+    /* L'idea di questo metodo è di scorrere le facce visibili dal punto. Si scorre la faccia mediante i suoi half edge,
+     * si verifica se il twin dell'half edge corrente (l'half edge della faccia visibile) appartenga ad una faccia non
+     * visibile dal punto, se così fosse, allora questo twin dell'half edge della faccia visibile fa parte dell'orizzonte.
+     * Una volta computate tutte le facce abbiamo un insieme di half edge non ordinati. Per ordinarli, mi servo di una mappa
+     * da FromVertex a half edge, in questo modo posso ordinare l'horizzonte. Partendo da un half edge qualunque dell'orizzonte,
+     * il successivo sarà mappa[edge->getToVertex()]. Dato che è una hash map ogni accesso è in O(1)
+     */
+
     std::set<Dcel::HalfEdge*> horizonUnordered;
     std::list<Dcel::HalfEdge*> horizonOrdered;
     std::map<Dcel::Vertex*, Dcel::HalfEdge*> hm;
@@ -295,6 +305,11 @@ void ConvexHullCore::removeFacesVisibleByVertex(std::set<Dcel::Face *>* facesVis
  * This method is executed to create the new faces using the horizon
  */
 std::vector<Dcel::Face*> ConvexHullCore::createNewFaces(std::list<Dcel::HalfEdge *> horizon, Dcel::Vertex* v3){
+
+    /* L'idea di questo metodo è: si scorrono gli half edge dell'orizzonte ordinati, er ogni half edge di questi, si crea una nuova faccia e i suoi relativi half edge
+     * in cui la direzione tra il nuovo half edge e quello dell'horizzonte è opposta.
+     */
+
     std::vector<Dcel::HalfEdge*> heEnter  = std::vector<Dcel::HalfEdge*>(horizon.size());
     std::vector<Dcel::HalfEdge*> heExit   = std::vector<Dcel::HalfEdge*>(horizon.size());
     std::vector<Dcel::Face*>     newFaces = std::vector<Dcel::Face*    >(horizon.size());
@@ -302,7 +317,7 @@ std::vector<Dcel::Face*> ConvexHullCore::createNewFaces(std::list<Dcel::HalfEdge
 
     int i=0;
     //Scorro hli half edge dell'orizzonte per creare le nuove facce, ad ogni ciclo creo una faccia
-    for(std::list<Dcel::HalfEdge*>::iterator it = horizon.begin(); it != horizon.end(); ++it){
+    for(std::list<Dcel::HalfEdge*>::iterator it = horizon.begin(); it != horizon.end(); ++it,i++){
         Dcel::HalfEdge* currentHalfEdgeHorizon = *it;
 
         //Creo i nuovi tre half edge della faccia corrente che sto creando
@@ -354,10 +369,13 @@ std::vector<Dcel::Face*> ConvexHullCore::createNewFaces(std::list<Dcel::HalfEdge
 
         //Carico in un vettore gli halfedge entranti del vertice (che usero per settare i twin)
         heEnter[i] = halfEdge3;
-        i++;
     }
 
     //Settaggio twin half edge, usando il modulo per garantire che il cerchio si chiuda
+    //i twin vengono settati secondo la proprietà
+    //che il twin dell'half edge uscente sia l'half edge del vettore dei vettori entranti,
+    //di una posizione in più rispetto alla sua, quindi, uscente[i]->setTwin(entrante[(i+(dim-1))%dim]) e viceversa;
+
     int dim=(heEnter.size());
     for(int i=0; i < dim ; i++){
         heEnter[(i+(dim-1))%dim] -> setTwin(heExit[i]);
@@ -418,7 +436,7 @@ void ConvexHullCore::findConvexHull(){
     setTetrahedron();
 
     //Inizializza il conflict graph con tutte le coppie visibili (Pt,f) con f faccia in dcel e t>4 (quindi con i punti successivi)
-    ConflictGraph conflictGraph= ConflictGraph(this->dcel, this-> vertexS);
+    ConflictGraph conflictGraph = ConflictGraph(this->dcel, this-> vertexS, this-> numberVertex);
     conflictGraph.initializeCG();
 
     //Ciclo principlae sei punti, dal punto 4 fino alla fine
@@ -475,3 +493,7 @@ void ConvexHullCore::findConvexHull(){
 
     }
 }
+
+/*********************************************************************
+ * Convex Hull Algorithm, developed by Sergio Serusi 65041           *
+ ********************************************************************/

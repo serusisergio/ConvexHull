@@ -16,10 +16,9 @@
  * This method is the constructor of the ConflictGraph class, it receive the pointer of the dcel
  * and the points.
  */
-ConflictGraph::ConflictGraph(DrawableDcel *Dcel,const std::vector<Dcel::Vertex*> &vertexS){
-    this->dcel         = Dcel;
-    this->vertexS      = vertexS;
-    this->numberVertex = this->vertexS.size();
+ConflictGraph::ConflictGraph(DrawableDcel *Dcel,const std::vector<Dcel::Vertex*> &vertexS,const int numberVertex):numberVertex(numberVertex){
+    this -> dcel         = Dcel;
+    this -> vertexS      = vertexS;
 }
 
 /**
@@ -233,5 +232,9 @@ std::map<Dcel::HalfEdge *, std::set<Dcel::Vertex*> *> ConflictGraph::getVertexMa
     }
     return vertexMap;
 }
+
+/*********************************************************************
+ * Convex Hull Algorithm, developed by Sergio Serusi 65041           *
+ ********************************************************************/
 
 
