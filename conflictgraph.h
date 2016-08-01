@@ -24,21 +24,22 @@ public:
 
 
     //OggettiVariali creati in questa classe
-    //HO usato una mappa di set, vista l'esigenza di eliminare ed aggiornare spesso è la soluzione migliore, il vettore è poco dinamico, per eliminare un oggetto bisogna
-    //successivmente risistemare tutti gli elementi del vettore.
+    //HO usato una mappa di set, vista l'esigenza di eliminare ed aggiornare spesso. Questa è la soluzione migliore rispetto all'utilizzo di
+    //vettore che è poco dinamico. Ad esempio per eliminare un oggetto bisogna successivmente risistemare tutti gli elementi del vettore.
     std::map<Dcel::Face*, std::set<Dcel::Vertex*>*> v_conflict;
     std::map<Dcel::Vertex*, std::set<Dcel::Face*>*> f_conflict;
 
 
 
 private:
+    //Variabile privata, indica il numero di vertici (è costante)
     const int numberVertex;
 
     //Oggetti-Variabili passati da convexhull core
     DrawableDcel* dcel;
     std::vector<Dcel::Vertex*> vertexS;
 
-
+    //Metodi privati usati per aggiungere gli elementi su v_conflict ed f_conflict
     void addFaceToVertex(Dcel::Face* face, Dcel::Vertex* vertex);
     void addVertexToFace(Dcel::Vertex* vertex, Dcel::Face* face);
 

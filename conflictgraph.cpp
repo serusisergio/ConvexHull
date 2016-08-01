@@ -69,6 +69,7 @@ void ConflictGraph::initializeCG(){
 /**
  * @brief ConflictGraph::isVisible()
  * This method is the used to verify if the vertex see the face
+ * @return True if the vertex see the face, false otherwise
  */
 bool ConflictGraph::isVisible(Dcel::Vertex *vertex, Dcel::Face *face) const{
 
@@ -96,7 +97,7 @@ bool ConflictGraph::isVisible(Dcel::Vertex *vertex, Dcel::Face *face) const{
 
 /**
  * @brief ConflictGraph::addFaceToVertex()
- * This method is the used to insert the face f that is in conflict with the vertex v
+ * This method is the used to insert the face f that is in conflict with the vertex v into the f_conflict
  */
 void ConflictGraph::addFaceToVertex(Dcel::Face* face, Dcel::Vertex* vertex){
 
@@ -115,7 +116,7 @@ void ConflictGraph::addFaceToVertex(Dcel::Face* face, Dcel::Vertex* vertex){
 
 /**
  * @brief ConflictGraph::addVertexToFace()
- * This method is the used to insert the vertex v that is in conflict with the face f
+ * This method is the used to insert the vertex v that is in conflict with the face f into the v_conflict
  */
 void ConflictGraph::addVertexToFace(Dcel::Vertex* vertex,Dcel::Face* face){
 
@@ -173,7 +174,7 @@ void ConflictGraph::deleteVertex(Dcel::Vertex* vertex){
 /**
  * @brief ConflictGraph::getFacesVisibleByVertex()
  * This method return the faces that are in conflict with vertex
- * @return set<Dcel::Face *>*
+ * @return set<Dcel::Face *>* at the visible faces of the vertex
  */
 std::set<Dcel::Face *>* ConflictGraph::getFacesVisibleByVertex(Dcel::Vertex *vertex) const{
 
@@ -188,7 +189,7 @@ std::set<Dcel::Face *>* ConflictGraph::getFacesVisibleByVertex(Dcel::Vertex *ver
 /**
  * @brief ConflictGraph::getVertexVisibleByFace()
  * This method return the vertexs that are in conflict with the face f
- * @return set<Dcel::Face *>*
+ * @return set<Dcel::Face *>* at the vertexs visible by the face
  */
 std::set<Dcel::Vertex *>* ConflictGraph::getVertexVisibleByFace(Dcel::Face *face) const{
 
@@ -227,7 +228,8 @@ std::map<Dcel::HalfEdge *, std::set<Dcel::Vertex*> *> ConflictGraph::getVertexMa
 
     std::map<Dcel::HalfEdge *, std::set<Dcel::Vertex*>*> vertexMap;
 
-    //Scorro l'orizzonte, e per ogni half edge dell'orizzonte prendo i vertici in conflitto con la faccia dell'half edge consideranto e del suo twin e lo associo all'half edge dell'orizzonte
+    //Scorro l'orizzonte, e per ogni half edge dell'orizzonte prendo i vertici in conflitto con la faccia dell'half edge considerato
+    //e del suo twin e lo associo all'half edge dell'orizzonte
     for(std::list<Dcel::HalfEdge*>::iterator hit = horizon.begin(); hit != horizon.end(); ++hit){
         Dcel::HalfEdge* currentHalfEdge = *hit;
         std::set<Dcel::Vertex*>* unionVertex= new std::set<Dcel::Vertex*>();

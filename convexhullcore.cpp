@@ -73,7 +73,7 @@ void ConvexHullCore::getVertexs(){
  * In this method is used eigen library, it can easily perform the
  * determinant of a matrix
  */
-bool ConvexHullCore::isCoplanar() const{
+bool ConvexHullCore::areCoplanar() const{
 
     //Recupero i primi 4 punti che formeranno il tetraedero
     Pointd p0= vertexS[0] -> getCoordinate();
@@ -109,7 +109,7 @@ void ConvexHullCore::executePermutation(){
     //Eseguo la permutazione, in modo da garantire che i punti non siano coplanari
     do{
        std::random_shuffle(this->vertexS.begin(), this->vertexS.end());
-    }while(isCoplanar());
+    }while(areCoplanar());
 }
 
 
@@ -291,22 +291,23 @@ void ConvexHullCore::removeFacesVisibleByVertex(std::set<Dcel::Face *>* facesVis
         }
 
         //elimino la faccia dalla dcel
-        this->dcel->deleteFace(face);
+        this -> dcel -> deleteFace(face);
     }
 
     //elimino i vertici non necessari dalla dcel
     for(std::list<Dcel::Vertex*>::iterator it = vertexToRemove.begin(); it != vertexToRemove.end(); ++it){
-         this->dcel->deleteVertex(*it);
+         this -> dcel -> deleteVertex(*it);
     }
 }
 
 /**
  * @brief ConvexHullCore::createNewFaces(std::list<Dcel::HalfEdge *> horizon, Dcel::Vertex *)
  * This method is executed to create the new faces using the horizon
+ * @return std::vector<Dcel::Face*> that contains the new faces create
  */
 std::vector<Dcel::Face*> ConvexHullCore::createNewFaces(std::list<Dcel::HalfEdge *> horizon, Dcel::Vertex* v3){
 
-    /* L'idea di questo metodo è: si scorrono gli half edge dell'orizzonte ordinati, er ogni half edge di questi, si crea una nuova faccia e i suoi relativi half edge
+    /* L'idea di questo metodo è: si scorrono gli half edge dell'orizzonte ordinati, per ogni half edge di questi, si crea una nuova faccia e i suoi relativi half edge
      * in cui la direzione tra il nuovo half edge e quello dell'horizzonte è opposta.
      */
 
@@ -321,18 +322,18 @@ std::vector<Dcel::Face*> ConvexHullCore::createNewFaces(std::list<Dcel::HalfEdge
         Dcel::HalfEdge* currentHalfEdgeHorizon = *it;
 
         //Creo i nuovi tre half edge della faccia corrente che sto creando
-        Dcel::HalfEdge* halfEdge1=dcel->addHalfEdge();
-        Dcel::HalfEdge* halfEdge2=dcel->addHalfEdge();
-        Dcel::HalfEdge* halfEdge3=dcel->addHalfEdge();
+        Dcel::HalfEdge* halfEdge1 = dcel -> addHalfEdge();
+        Dcel::HalfEdge* halfEdge2 = dcel -> addHalfEdge();
+        Dcel::HalfEdge* halfEdge3 = dcel -> addHalfEdge();
 
         //Creao la faccia e setto l'outer
         Dcel::Face* currentFace = dcel->addFace();
-        currentFace->setOuterHalfEdge(halfEdge1);
-        newFaces[i]=currentFace;
+        currentFace ->setOuterHalfEdge(halfEdge1);
+        newFaces[i] = currentFace;
 
         //Dai vertici che tratta l'half edge corrente gli uso per costruire
-        Dcel::Vertex* v1 = currentHalfEdgeHorizon->getToVertex(); //attenzione all'ordine, deve essere in senso antiorario, regola mano destra
-        Dcel::Vertex* v2 = currentHalfEdgeHorizon->getFromVertex();
+        Dcel::Vertex* v1 = currentHalfEdgeHorizon -> getToVertex(); //attenzione all'ordine, deve essere in senso antiorario, regola mano destra
+        Dcel::Vertex* v2 = currentHalfEdgeHorizon -> getFromVertex();
 
         //Setto tutti i paramentri degli half edge
         halfEdge1 -> setFromVertex(v1);
@@ -442,10 +443,10 @@ void ConvexHullCore::findConvexHull(){
     //Ciclo principlae sei punti, dal punto 4 fino alla fine
     for(int point_i=4; point_i < numberVertex; point_i++){
 
-        Dcel::Vertex* currentPoint=vertexS[point_i];
+        Dcel::Vertex* currentPoint = vertexS[point_i];
 
         //Prendo le facce visibili dal vertice
-        std::set<Dcel::Face*>* facesVisibleByVertex=conflictGraph.getFacesVisibleByVertex(currentPoint);
+        std::set<Dcel::Face*>* facesVisibleByVertex = conflictGraph.getFacesVisibleByVertex(currentPoint);
         std::list<Dcel::HalfEdge*> horizon;
 
 

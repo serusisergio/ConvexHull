@@ -26,7 +26,7 @@ private:
     bool verifyEuleroProperty() const;
     void getVertexs();
     void executePermutation();
-    bool isCoplanar() const;
+    bool areCoplanar() const;
     void setTetrahedron();
     std::list<Dcel::HalfEdge*> getHorizon(std::set<Dcel::Face*>* facesVisibleByVertex) const;
     void removeFacesVisibleByVertex(std::set<Dcel::Face*>* facesVisibleByVertex);
