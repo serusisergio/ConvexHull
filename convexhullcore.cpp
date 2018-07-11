@@ -1,7 +1,7 @@
 #include "convexhullcore.h"
 
 /*********************************************************************
- * Convex Hull Algorithm, developed by Sergio Serusi 65041           *
+ * Convex Hull Algorithm, developed by Sergio Serusi                 *
  *********************************************************************
  *                                                                   *
  * Il cuore dell'algoritmo si trova nel metodo find Convex Hull,     *
@@ -13,8 +13,6 @@
  * grazie alle informazione che si porta dietro il Conflict Graph.   *
  * I metodi presenti sono tutti commentati.                          *
  * Per avere più dettagli considerare il pdf allegato al progetto.   *
- * Per qualsiasi informazione o delucidazione contattare:            *
- * serusi@unica.it oppure serusisergio@hotmail.it                    *
  *********************************************************************/
 
 /**
